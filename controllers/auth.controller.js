@@ -30,12 +30,12 @@ const AuthController = {
             password: encryptedPassword,
         }); 
 
-        sendCredentialsEmail({ FirstName, LastName, email, password });
-
         const token = jwt.sign({ user_id: user._id, email }, process.env.KEY,{ expiresIn: "3d" });
-        user.token = token;  
+        user.token = token; 
+        
+        await sendCredentialsEmail({ FirstName , LastName , email , password , token});
   
-        res.status(200).json({ message: 'Inscription réussie. Veuillez vérifier votre e-mail pour confirmer.'  , user });
+        res.status(200).json({ message: 'Inscription réussie. Veuillez vérifier votre e-mail pour confirmer.'  , user , token});
       } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Erreur lors de l\'inscription' });
@@ -51,6 +51,14 @@ const AuthController = {
             }
     
             const user = await User.findOne({ email });
+
+            if (!user) {
+                return res.status(401).json({ error: 'Adresse e-mail ou mot de passe incorrect' });
+            }
+    
+            if (!user.confirmed) {
+                return res.status(401).json({ error: 'Veuillez confirmer votre adresse e-mail pour vous connecter.' });
+            }
     
             if (user && (await bcrypt.compare(password, user.password))) {
                 const token = jwt.sign({ id: user._id }, process.env.KEY);
@@ -73,6 +81,17 @@ const AuthController = {
             return res.status(500).json({ error: 'Erreur lors de la connexion' });
         }
     },
+    ConfirmSingnUp: async (req, res) => {
+        const token = req.params.token;
+        try {
+            const decodedToken = jwt.verify(token, process.env.KEY);
+            await User.findByIdAndUpdate(decodedToken.user_id, { confirmed: true });
+            res.status(200).send('Registration confirmed successfully. You can now sign in.');
+        } catch (error) {
+            console.error(error);
+            res.status(500).send('Error confirming registration.');
+        }
+    }
 };
   
 module.exports = AuthController;

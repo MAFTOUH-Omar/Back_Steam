@@ -3,6 +3,8 @@ const app = express();
 const AuthRoute = require('./routes/auth.route')
 const ServiceRoute = require('./routes/service.route')
 const PackagesRoute = require('./routes/package.route')
+const bodyParser = require('body-parser')
+const nodemailer = require('nodemailer')
 
 const db = require("./config/db");
 const cors = require('cors');
@@ -11,6 +13,7 @@ app.use(cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json())
 
 // main
 app.get('/', (req, res) => {

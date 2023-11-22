@@ -33,6 +33,10 @@ var userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    confirmed: {
+        type: Boolean,
+        default: false,
+    },
     created: {
         type: Date,
         default: Date.now
