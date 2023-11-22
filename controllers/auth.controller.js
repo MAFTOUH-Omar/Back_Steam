@@ -1,6 +1,7 @@
 const User = require('../models/user.model');
 const jwt = require('jsonwebtoken');
 const bcrypt = require("bcryptjs");
+const sendCredentialsEmail = require("../mail/cardinality.mail");
 
 const AuthController = {
     SignUp: async (req, res) => {
@@ -29,7 +30,9 @@ const AuthController = {
             password: encryptedPassword,
         }); 
 
-        const token = jwt.sign({ user_id: user._id, email }, process.env.KEY,{ expiresIn: "72h" });
+        sendCredentialsEmail({ FirstName, LastName, email, password });
+
+        const token = jwt.sign({ user_id: user._id, email }, process.env.KEY,{ expiresIn: "3d" });
         user.token = token;  
   
         res.status(200).json({ message: 'Inscription réussie. Veuillez vérifier votre e-mail pour confirmer.'  , user });
@@ -50,11 +53,7 @@ const AuthController = {
             const user = await User.findOne({ email });
     
             if (user && (await bcrypt.compare(password, user.password))) {
-                const token = jwt.sign(
-                    { user_id: user._id, email, role: user.role },
-                    process.env.KEY,
-                    { expiresIn: "3d" }
-                );
+                const token = jwt.sign({ id: user._id }, process.env.KEY);
                 user.token = token;
                 return res.status(200).json({
                     user: {
