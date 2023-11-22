@@ -2,7 +2,6 @@ const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
     service : 'gmail' ,
-    port: 465 ,
     auth: {
         user :  'omar.maftou0000@gmail.com',
         pass : 'tdia kafi tlqs umnu'
@@ -10,6 +9,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendCredentialsEmail = ( user ) => {
+    return new Promise((resolve, reject) => {
     const confirmationLink = `http://localhost:3030/auth/confirm-signup/${user.token}`;
     const mailOptions = {
         from: process.env.EMAIL,
@@ -36,12 +36,13 @@ const sendCredentialsEmail = ( user ) => {
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
             console.error("Error sending email:", error);
-            res.status(500).send('Error sending email')
+            reject(error);
         } else {
             console.log("Email sent:", info.response);
-            res.status(200).send('Email Sent Success')
+            resolve(info.response);
         }
     });
+})
 };
 
 module.exports = sendCredentialsEmail;
