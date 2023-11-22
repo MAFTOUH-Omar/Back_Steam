@@ -1,12 +1,12 @@
 const nodemailer = require("nodemailer");
-const jwt = require('jsonwebtoken');
 
 const transporter = nodemailer.createTransport({
     service : 'gmail' ,
+    port: 465 ,
     auth: {
-        user : 'omar.maftou0000@gmail.com',
-        pass : 'tzwt zkej igrx zljd'
-    },
+        user :  'omar.maftou0000@gmail.com',
+        pass : 'tdia kafi tlqs umnu'
+    }
 });
 
 const sendCredentialsEmail = ( user ) => {

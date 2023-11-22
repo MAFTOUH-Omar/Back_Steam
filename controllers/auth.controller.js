@@ -8,11 +8,6 @@ const AuthController = {
       try {
         const { FirstName, LastName, Country, phone, email, password } = req.body;
 
-        if (!(email && password && Country && LastName && phone && LastName && FirstName)) {
-            res.status(400).send("All input is required");
-            return;
-        }
-
         const existingUser = await User.findOne({ email });
 
         if (existingUser) {
