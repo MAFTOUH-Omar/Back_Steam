@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const AuthController = require('../controllers/auth.controller');
+const SignUpController = require('../controllers/signup.controller');
 
 const validateSignUpInput = (req, res, next) => {
     const { FirstName, LastName, Country, phone, email, password } = req.body;
@@ -12,7 +13,7 @@ const validateSignUpInput = (req, res, next) => {
     next();
 };
 
-router.post('/signup', validateSignUpInput , AuthController.SignUp);
+router.post('/signup', validateSignUpInput , SignUpController.subscribe);
 router.post('/signin', AuthController.SignIn);
 router.get('/confirm-signup/:token', AuthController.ConfirmSingnUp);
 
