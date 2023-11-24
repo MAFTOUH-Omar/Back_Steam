@@ -28,11 +28,10 @@ const AuthController = {
         const token = jwt.sign({ user_id: user._id, email }, process.env.KEY,{ expiresIn: "3d" });
         user.token = token; 
         
-        await sendCredentialsEmail({ FirstName , LastName , email , password , token});
+        // await sendCredentialsEmail({ FirstName , LastName , email , password , token});
   
         res.status(200).json({ message: 'Inscription réussie. Veuillez vérifier votre e-mail pour confirmer.'  , user , token});
       } catch (error) {
-            await sendCredentialsEmail({ FirstName , LastName , email , password , token});
             console.error(error);
             res.status(500).json({ error: 'Erreur lors de l\'inscription' });
         }
