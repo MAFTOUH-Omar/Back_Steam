@@ -2,7 +2,7 @@ const Service = require('../models/service.model');
 const Package = require('../models/packages.model');
 
 const Services = {
-    All: async (req, res) => {
+    All : async (req, res) => {
         try {
             const services = await Service.find();
 
@@ -24,7 +24,16 @@ const Services = {
             console.error(error);
             res.status(500).json({ error: 'Erreur lors de la récupération des services' });
         }
-    }
+    },  
+    countServices: async (req, res) => {
+        try {
+            const serviceCount = await Service.countDocuments();
+            res.status(200).json({ count: serviceCount });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Erreur lors du calcul du nombre de services' });
+        }
+    },
 };
 
 module.exports = Services;

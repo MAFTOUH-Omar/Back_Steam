@@ -7,9 +7,7 @@ const auth = async (req, res, next) => {
     const secretKey = req.headers.secret_key;
 
     if (!token || !secretKey) {
-      return res
-        .status(401)
-        .json({ message: "Authentication failed: No token or secret key provided." });
+      return res.status(401).json({ message: "Authentication failed: No token or secret key provided." });
     }
 
     if (secretKey !== process.env.KEY) {

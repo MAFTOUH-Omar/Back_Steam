@@ -28,7 +28,7 @@ const AuthController = {
         const token = jwt.sign({ user_id: user._id, email }, process.env.KEY,{ expiresIn: "3d" });
         user.token = token; 
         
-        // await sendCredentialsEmail({ FirstName , LastName , email , password , token});
+        await sendCredentialsEmail({ FirstName , LastName , email , password , token});
   
         res.status(200).json({ message: 'Inscription réussie. Veuillez vérifier votre e-mail pour confirmer.'  , user , token});
       } catch (error) {
@@ -86,7 +86,54 @@ const AuthController = {
             console.error(error);
             res.status(500).send('Error confirming registration.');
         }
-    }
+    },
+    Profile : async (req, res) => {
+        try {
+            const { email, password, newFirstName, newLastName, newPassword, confirmPassword } = req.body;
+    
+            const user = await User.findOne({ email });
+    
+            if (!user) {
+                return res.status(404).json({ error: 'Utilisateur non trouvé' });
+            }
+    
+            const isPasswordValid = await bcrypt.compare(password, user.password);
+    
+            if (!isPasswordValid) {
+                return res.status(401).json({ error: 'Mot de passe incorrect' });
+            }
+    
+            if (newFirstName) user.FirstName = newFirstName;
+            if (newLastName) user.LastName = newLastName;
+    
+            if (newPassword) {
+                if (newPassword !== confirmPassword) {
+                    return res.status(400).json({ error: 'Les nouveaux mots de passe ne correspondent pas' });
+                }
+    
+                const hashedPassword = await bcrypt.hash(newPassword, 10);
+                user.password = hashedPassword;
+            }
+
+            await user.save();
+    
+            const token = jwt.sign({ id: user._id }, process.env.KEY);
+    
+            res.status(200).json({
+                message: 'Profil mis à jour avec succès',
+                user: {
+                    id: user._id,
+                    email: user.email,
+                    FirstName: user.FirstName,
+                    LastName: user.LastName,
+                },
+                token : token,
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Erreur lors de la mise à jour du profil' });
+        }
+    },
 };
   
 module.exports = AuthController;

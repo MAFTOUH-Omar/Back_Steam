@@ -1,5 +1,6 @@
 const Service = require('../models/service.model');
 const Package = require('../models/packages.model');
+const mongoose = require("mongoose");
 
 const Packages = {
     AddPackagesToService: async (req, res) => {
@@ -12,7 +13,6 @@ const Packages = {
                 return res.status(404).json({ error: 'Service non trouvé' });
             }
 
-            // Créez un nouveau package
             const newPackage = new Package({
                 name,
                 price,
@@ -27,6 +27,22 @@ const Packages = {
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Erreur lors de l\'ajout du package' });
+        }
+    },
+    PackagesByServiceId : async(req, res) => {
+        try {
+            const { serviceId } = req.params;
+
+            if (!mongoose.Types.ObjectId.isValid(serviceId)) {
+                return res.status(400).json({ error: 'Invalid serviceId' });
+            }
+      
+            const packages = await Package.find({ serviceId }).populate('serviceId', 'name');
+
+            res.status(200).json({ packages });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Erreur lors de la récupération des packages par serviceId' });
         }
     }
 }
