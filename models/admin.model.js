@@ -27,6 +27,10 @@ const adminSchema = new mongoose.Schema({
           required: true,
         },
     }],
+    services: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Service'
+    }],
 });
 
 adminSchema.statics.findByCredentials = async function (email, password) {

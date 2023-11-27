@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require("bcryptjs");
 const Admin = require('../models/admin.model');
+const Service = require('../models/service.model')
 
 const AdminController = {
     adminSignin: async (req, res) => {
@@ -26,29 +27,35 @@ const AdminController = {
     addAdmin: async (req, res) => {
         try {
             const { adminName, email, password } = req.body;
-
+    
             const existingAdmin = await Admin.findOne({ email });
-
+    
             if (existingAdmin) {
                 return res.status(400).json({ error: 'Un administrateur avec cet email existe déjà.' });
             }
-
+    
             const saltRounds = 8;
             const hashedPassword = await bcrypt.hash(password, saltRounds);
-
+    
             const newAdmin = new Admin({
                 adminName,
                 email,
                 password: hashedPassword,
             });
-
+    
             await newAdmin.save();
-
+    
+            const firstTwoServices = await Service.find().sort({ created: 1 }).limit(2);
+            const firstTwoServiceIds = firstTwoServices.map(service => service._id);
+    
+            newAdmin.services = firstTwoServiceIds;
+            await newAdmin.save();
+    
             const token = jwt.sign({ _id: newAdmin._id }, process.env.KEY, { expiresIn: '1h' });
-
+    
             newAdmin.tokens = newAdmin.tokens.concat({ token });
             await newAdmin.save();
-
+    
             res.status(201).json({ admin: newAdmin, token });
         } catch (error) {
             console.error(error);

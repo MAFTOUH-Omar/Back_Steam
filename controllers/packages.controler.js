@@ -44,7 +44,16 @@ const Packages = {
             console.error(error);
             res.status(500).json({ error: 'Erreur lors de la récupération des packages par serviceId' });
         }
-    }
+    },
+    countPackages : async (req, res) => {
+        try {
+          const packageCount = await Package.countDocuments();
+          res.status(200).json({ count: packageCount });
+        } catch (error) {
+          console.error(error);
+          res.status(500).json({ error: 'Error counting packages' });
+        }
+    },
 }
 
 module.exports = Packages;

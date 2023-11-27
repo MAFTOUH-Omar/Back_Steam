@@ -1,14 +1,23 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-var serviceSchema = new mongoose.Schema({
+const serviceSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, "Name not provided"],
     },
+    credit: {
+        type: Number,
+        default: 0,
+    },
+    admins: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Admin'
+    }],
     created: {
         type: Date,
-        default: Date.now
-    }
+        default: Date.now,
+    },
 });
 
-module.exports = mongoose.model("service", serviceSchema);
+const Service = mongoose.model('Service', serviceSchema);
+module.exports = Service;
