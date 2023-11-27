@@ -4,6 +4,7 @@ const AuthRoute = require('./routes/auth.route')
 const ServiceRoute = require('./routes/service.route')
 const PackagesRoute = require('./routes/package.route')
 const UserRoute = require('./routes/user.route')
+const AdminRoute = require('./routes/admin.route')
 const bodyParser = require('body-parser')
 
 const db = require("./config/db");
@@ -28,6 +29,8 @@ app.use('/service' , ServiceRoute)
 app.use('/packages' , PackagesRoute)
 //User routes
 app.use('/user' , UserRoute)
+//Admin routes
+app.use('/admin' , AdminRoute)
 //Not Found Routes
 app.use("*", (req, res) => {
     res.status(404).json({

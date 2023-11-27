@@ -81,7 +81,7 @@ const AuthController = {
         try {
             const decodedToken = jwt.verify(token, process.env.KEY);
             await User.findByIdAndUpdate(decodedToken.user_id, { confirmed: true });
-            res.status(200).send('Registration confirmed successfully. You can now sign in.');
+            res.redirect(process.env.CONFIRMATION_Link);
         } catch (error) {
             console.error(error);
             res.status(500).send('Error confirming registration.');
