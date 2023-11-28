@@ -14,7 +14,7 @@ const Services = {
                         _id: service._id,
                         name: service.name,
                         packageCount: packages.length,
-                        packages: packages,
+                        packages: packages
                     };
                 })
             );
@@ -44,6 +44,15 @@ const Services = {
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Erreur lors de la récupération du service par ID' });
+        }
+    },
+    getAllServicesWithCredit: async (req, res) => {
+        try {
+            const services = await Service.find();
+            res.status(200).json({ status: 'success', data: services });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ status: 'fail', message: 'Internal Server Error' });
         }
     },
 };
