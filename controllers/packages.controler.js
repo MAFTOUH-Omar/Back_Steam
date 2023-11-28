@@ -5,28 +5,63 @@ const mongoose = require("mongoose");
 const Packages = {
     AddPackagesToService: async (req, res) => {
         try {
-            const { serviceId } = req.params;
-            const { name, price, duration, etat } = req.body;
+            const { name, price , duration, etat , serviceId} = req.body;
 
-            const existingService = await Service.findById(serviceId);
-            if (!existingService) {
-                return res.status(404).json({ error: 'Service non trouvé' });
+            const existingPackage = await Package.findOne({ name });
+            if (existingPackage) {
+                return res.status(400).json({ status: 'fail', message: 'Package name already exists' });
             }
 
-            const newPackage = new Package({
+            const newPackage = await Package.create({
+                serviceId,
                 name,
                 price,
                 duration,
                 etat,
-                serviceId: existingService._id,
             });
 
-            await newPackage.save();
+            res.status(201).json({
+                status: 'success',
+                message: 'Service add with success',
+                data: { package: newPackage },
+            });
+        } catch (err) {
+            res.status(400).json({
+                status: 'fail',
+                message: err.message,
+            });
+        }
+    },
+    EditPackage : async (req, res) => {
+        try {
+            const existingPackage = await Package.findOne({ name: req.body.name, _id: { $ne: req.params.id } });
+            if (existingPackage) {
+                return res.status(400).json({status: 'fail', message: 'Package name already exists',});
+            }
+      
+            const updatedPackage = await Package.findByIdAndUpdate(req.params.id, req.body, {
+                new: true,
+                runValidators: true,
+            });
 
-            res.status(201).json({ message: 'Package ajouté avec succès' });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: 'Erreur lors de l\'ajout du package' });
+            if (!updatedPackage) {
+                return res.status(404).json({status: 'fail',message: 'Package not found',});
+            }
+        
+            res.status(200).json({status: 'success',data: {package: updatedPackage,},});
+        } catch (err) {
+            res.status(400).json({ status: 'fail',message: err.message,});
+        }
+    },
+    DeletePackage : async (req, res) => {
+        try {
+            const deletedPackage = await Package.findByIdAndDelete(req.params.id);
+            if (!deletedPackage) {
+                return res.status(404).json({status: 'fail',message: 'Package not found',});
+            }
+            res.status(204).json({status: 'success',data: null,});
+        } catch (err) {
+            res.status(400).json({status: 'fail',message: err.message,});
         }
     },
     PackagesByServiceId : async(req, res) => {

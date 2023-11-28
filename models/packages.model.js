@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Service = require('./service.model');
 
 var packageSchema = new mongoose.Schema({
     name: {
@@ -19,7 +20,7 @@ var packageSchema = new mongoose.Schema({
     },
     serviceId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "service"
+        ref: "Service"
     },
     created: {
         type: Date,
