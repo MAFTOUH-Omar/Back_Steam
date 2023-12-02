@@ -1,6 +1,9 @@
 const Service = require('../models/service.model');
 const Package = require('../models/packages.model');
 const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
+
+const id = new ObjectId()
 
 const Packages = {
     getAvailablePackagesForService: async (req, res) => {
@@ -11,12 +14,12 @@ const Packages = {
                 return res.status(400).json({ error: 'Invalid serviceId' });
             }
 
-            const availablePackages = await Package.find({ etat: 'Available', serviceId: mongoose.Types.ObjectId(serviceId) }).populate('serviceId', 'name');
+            const availablePackages = await Package.find({ etat: 'Available', serviceId: new mongoose.Types.ObjectId(serviceId) }).populate('serviceId', 'name');
 
             res.status(200).json({ packages: availablePackages });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Erreur lors de la récupération des packages.' });
+            res.status(500).json({ error: 'Error retrieving available packages.' });
         }
     },
     disablePackage: async (req, res) => {

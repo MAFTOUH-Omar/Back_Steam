@@ -7,7 +7,6 @@ const qrcode = require('qrcode');
 const AdminController = {
     generateQRCode: async (data) => {
         try {
-            // Générer un code à 8 chiffres
             const code = Math.floor(10000000 + Math.random() * 90000000);
     
             // Temps d'expiration d'une minute
@@ -64,19 +63,15 @@ const AdminController = {
                 return res.status(404).send({ error: 'Admin non trouvé' });
             }
 
-            // Vérifier si le code fourni correspond au code généré par generateQRCode
             if (admin.QRCode !== code) {
                 return res.status(401).send({ error: 'Code QR invalide' });
             }
 
-            // Vérifier si le code a expiré
             const now = new Date();
 
             if (now > admin.expirationTime) {
                 return res.status(401).send({ error: 'Le code QR a expiré' });
             }
-
-            // Vous pouvez ajouter d'autres validations ici si nécessaire
             
             const token = jwt.sign({ _id: admin._id.toString() }, process.env.KEY);
 
@@ -118,6 +113,59 @@ const AdminController = {
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Erreur lors de l\'ajout de l\'administrateur.' });
+        }
+    },
+    updateAdminProfile: async (req, res) => {
+        try {
+            const { adminId } = req.params;
+            const { email, currentPassword, newPassword, confirmPassword, adminName } = req.body;
+
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (email && !emailRegex.test(email)) {
+                return res.status(400).json({ error: 'Email format is invalid' });
+            }
+
+            // Check if current password is provided
+            if (!currentPassword) {
+                return res.status(400).json({ error: 'Current password is required' });
+            }
+
+            // Validate password strength
+            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+            if (newPassword && !passwordRegex.test(newPassword)) {
+                return res.status(400).json({ error: 'Password must be at least 8 characters long and contain at least one letter, one number, and one special character' });
+            }
+
+            // Retrieve admin from the database
+            const admin = await Admin.findById(adminId);
+
+            // Check if the current password matches the stored password
+            const isPasswordValid = await bcrypt.compare(currentPassword, admin.password);
+            if (!isPasswordValid) {
+                return res.status(401).json({ error: 'Current password is incorrect' });
+            }
+
+            // Check if new password and confirm password match
+            if (newPassword !== confirmPassword) {
+                return res.status(400).json({ error: 'New password and confirm password do not match' });
+            }
+
+            // Update admin profile
+            const updateFields = {};
+            if (email) updateFields.email = email;
+            if (newPassword) {
+                const saltRounds = 8;
+                updateFields.password = await bcrypt.hash(newPassword, saltRounds);
+            }
+            if (adminName) updateFields.adminName = adminName;
+
+            const updatedAdmin = await Admin.findByIdAndUpdate(adminId, updateFields, { new: true });
+
+            res.status(200).json({ message: 'Profil mis à jour avec succès', admin: updatedAdmin });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Error updating admin profile' });
         }
     },
 };
