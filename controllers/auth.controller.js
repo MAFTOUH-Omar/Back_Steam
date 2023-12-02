@@ -3,40 +3,54 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require("bcryptjs");
 const sendCredentialsEmail = require("../mail/cardinality.mail");
 
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d|\W).+$/;
+
 const AuthController = {
     SignUp: async (req, res) => {
-      try {
-        const { FirstName, LastName, Country, phone, email, password } = req.body;
-
-        const existingUser = await User.findOne({ email });
-
-        if (existingUser) {
-            return res.status(400).json({ error: 'Email already exists' });
-        }
-
-        const encryptedPassword = await bcrypt.hash(password, 10);
-
-        const user = await User.create({
-            FirstName: FirstName,
-            LastName: LastName,
-            Country: Country,
-            phone: phone,
-            email: email.toLowerCase(),
-            password: encryptedPassword,
-        }); 
-
-        const token = jwt.sign({ user_id: user._id, email }, process.env.KEY,{ expiresIn: "3d" });
-        user.token = token; 
+        try {
+            const { FirstName, LastName, Country, phone, email, password } = req.body;
         
-        await sendCredentialsEmail({ FirstName , LastName , email , password , token});
-  
-        res.status(200).json({ message: 'Inscription réussie. Veuillez vérifier votre e-mail pour confirmer.'  , user , token});
-      } catch (error) {
+            const existingUser = await User.findOne({ email });
+        
+            if (existingUser) {
+                return res.status(400).json({ error: 'Email already exists' });
+            }
+
+            if (
+                password.length < 8 ||
+                !password.match(passwordRegex)
+            ) {
+                return res.status(400).json({error:'Le mot de passe doit contenir au moins 8 caractères, inclure des majuscules, des chiffres ou des caractères spéciaux.',});
+            }
+      
+          const encryptedPassword = await bcrypt.hash(password, 10);
+      
+            const user = await User.create({
+                FirstName: FirstName,
+                LastName: LastName,
+                Country: Country,
+                phone: phone,
+                email: email.toLowerCase(),
+                password: encryptedPassword,
+            });
+        
+            const token = jwt.sign({ user_id: user._id, email }, process.env.KEY, { expiresIn: '3d', });
+            user.token = token;
+      
+            await sendCredentialsEmail({
+                FirstName,
+                LastName,
+                email,
+                password,
+                token,
+            });
+      
+            res.status(200).json({message:'Inscription réussie. Veuillez vérifier votre e-mail pour confirmer.',user,token,});
+        } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Erreur lors de l\'inscription' });
         }
     },
-  
     SignIn: async (req, res) => {
         try {
             const { email, password } = req.body;
@@ -87,47 +101,51 @@ const AuthController = {
             res.status(500).send('Error confirming registration.');
         }
     },
-    Profile : async (req, res) => {
+    Profile: async (req, res) => {
         try {
             const { email, password, newFirstName, newLastName, newPassword, confirmPassword } = req.body;
-    
+        
             const user = await User.findOne({ email });
-    
+        
             if (!user) {
                 return res.status(404).json({ error: 'Utilisateur non trouvé' });
             }
-    
+        
             const isPasswordValid = await bcrypt.compare(password, user.password);
-    
+        
             if (!isPasswordValid) {
                 return res.status(401).json({ error: 'Mot de passe incorrect' });
             }
-    
+        
             if (newFirstName) user.FirstName = newFirstName;
             if (newLastName) user.LastName = newLastName;
-    
+        
             if (newPassword) {
+                if (newPassword.length < 8 || !newPassword.match(passwordRegex)) {
+                    return res.status(400).json({error:'Le nouveau mot de passe doit contenir au moins 8 caractères, inclure des majuscules, des chiffres ou des caractères spéciaux.',});
+                }
+        
                 if (newPassword !== confirmPassword) {
                     return res.status(400).json({ error: 'Les nouveaux mots de passe ne correspondent pas' });
                 }
-    
+        
                 const hashedPassword = await bcrypt.hash(newPassword, 10);
                 user.password = hashedPassword;
             }
-
+        
             await user.save();
-    
+        
             const token = jwt.sign({ id: user._id }, process.env.KEY);
-    
+        
             res.status(200).json({
                 message: 'Profil mis à jour avec succès',
                 user: {
-                    id: user._id,
-                    email: user.email,
-                    FirstName: user.FirstName,
-                    LastName: user.LastName,
+                id: user._id,
+                email: user.email,
+                FirstName: user.FirstName,
+                LastName: user.LastName,
                 },
-                token : token,
+                token,
             });
         } catch (error) {
             console.error(error);

@@ -3,65 +3,44 @@ const Package = require('../models/packages.model');
 const mongoose = require("mongoose");
 
 const Packages = {
-    AddPackagesToService: async (req, res) => {
+    getAvailablePackagesForService: async (req, res) => {
         try {
-            const { name, price , duration, etat , serviceId} = req.body;
+            const { serviceId } = req.params;
 
-            const existingPackage = await Package.findOne({ name });
-            if (existingPackage) {
-                return res.status(400).json({ status: 'fail', message: 'Package name already exists' });
+            if (!mongoose.Types.ObjectId.isValid(serviceId)) {
+                return res.status(400).json({ error: 'Invalid serviceId' });
             }
 
-            const newPackage = await Package.create({
-                serviceId,
-                name,
-                price,
-                duration,
-                etat,
-            });
+            const availablePackages = await Package.find({ etat: 'Available', serviceId: mongoose.Types.ObjectId(serviceId) }).populate('serviceId', 'name');
 
-            res.status(201).json({
-                status: 'success',
-                message: 'Service add with success',
-                data: { package: newPackage },
-            });
-        } catch (err) {
-            res.status(400).json({
-                status: 'fail',
-                message: err.message,
-            });
+            res.status(200).json({ packages: availablePackages });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Erreur lors de la récupération des packages.' });
         }
     },
-    EditPackage : async (req, res) => {
+    disablePackage: async (req, res) => {
         try {
-            const existingPackage = await Package.findOne({ name: req.body.name, _id: { $ne: req.params.id } });
-            if (existingPackage) {
-                return res.status(400).json({status: 'fail', message: 'Package name already exists',});
-            }
-      
-            const updatedPackage = await Package.findByIdAndUpdate(req.params.id, req.body, {
-                new: true,
-                runValidators: true,
-            });
+            const { serviceId } = req.params;
 
-            if (!updatedPackage) {
-                return res.status(404).json({status: 'fail',message: 'Package not found',});
-            }
-        
-            res.status(200).json({status: 'success',data: {package: updatedPackage,},});
-        } catch (err) {
-            res.status(400).json({ status: 'fail',message: err.message,});
+            const disabledPackage = await Package.findByIdAndUpdate(serviceId, { $set: { etat: 'Not Available' } }, { new: true });
+
+            res.status(200).json({ package: disabledPackage });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Erreur lors de la désactivation du package.' });
         }
     },
-    DeletePackage : async (req, res) => {
+    enablePackage: async (req, res) => {
         try {
-            const deletedPackage = await Package.findByIdAndDelete(req.params.id);
-            if (!deletedPackage) {
-                return res.status(404).json({status: 'fail',message: 'Package not found',});
-            }
-            res.status(204).json({status: 'success',data: null,});
-        } catch (err) {
-            res.status(400).json({status: 'fail',message: err.message,});
+            const { serviceId } = req.params;
+
+            const enabledPackage = await Package.findByIdAndUpdate(serviceId, { $set: { etat: 'Available' } }, { new: true });
+
+            res.status(200).json({ package: enabledPackage });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Erreur lors de l\'activation du package.' });
         }
     },
     PackagesByServiceId : async(req, res) => {
@@ -82,11 +61,11 @@ const Packages = {
     },
     countPackages : async (req, res) => {
         try {
-          const packageCount = await Package.countDocuments();
-          res.status(200).json({ count: packageCount });
+            const packageCount = await Package.countDocuments();
+            res.status(200).json({ count: packageCount });
         } catch (error) {
-          console.error(error);
-          res.status(500).json({ error: 'Error counting packages' });
+            console.error(error);
+            res.status(500).json({ error: 'Error counting packages' });
         }
     },
     getPackageById: async (req, res) => {

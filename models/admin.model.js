@@ -18,15 +18,14 @@ const adminSchema = new mongoose.Schema({
         unique: true,
         trim: true,
     },
-    dernierToken: {
-        type: String,
+    QRCode: {
+        type: Number,
+        default: null,
+    },    
+    expirationTime: {
+        type: Date,
+        default: null,
     },
-    tokens: [{
-        token: {
-          type: String,
-          required: true,
-        },
-    }],
     services: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Service'
@@ -47,8 +46,8 @@ adminSchema.statics.findByCredentials = async function (email, password) {
     }
   
     return admin;
-  };
+};
+
+const Admin = mongoose.model('Admin', adminSchema);
   
-  const Admin = mongoose.model('Admin', adminSchema);
-  
-  module.exports = Admin;
+module.exports = Admin;
