@@ -1,10 +1,16 @@
 const mongoose = require('mongoose');
-const User = require('./user.model')
+const User = require('./user.model');
+const Package = require('./packages.model');
 
 const subscriptionSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
+        required: true,
+    },
+    packageId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Package',
         required: true,
     },
     deviceType: {

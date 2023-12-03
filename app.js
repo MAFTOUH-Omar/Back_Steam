@@ -6,6 +6,7 @@ const PackagesRoute = require('./routes/package.route')
 const UserRoute = require('./routes/user.route')
 const AdminRoute = require('./routes/admin.route')
 const ThemeRoute = require('./routes/theme.route')
+const SubscriptionRoute = require('./routes/subscription.route')
 const bodyParser = require('body-parser')
 
 const db = require("./config/db");
@@ -32,8 +33,10 @@ app.use('/packages' , PackagesRoute)
 app.use('/user' , UserRoute)
 //Admin routes
 app.use('/admin' , AdminRoute)
-//Not Found Routes
+//Theme Routes
 app.use('/theme' , ThemeRoute)
+//Subscription Routes
+app.use('/subscription' , SubscriptionRoute)
 //Not Found Routes
 app.use("*", (req, res) => {
     res.status(404).json({
