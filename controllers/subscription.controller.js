@@ -11,7 +11,7 @@ const SubscriptionController = {
                 return res.status(400).json({ error: 'Invalid user or package ID' });
             }
 
-            let existingSubscription = await Subscription.findOne({ user: userId, deviceType });
+            let existingSubscription = await Subscription.findOne({ user: userId, packageId, deviceType });
 
             let deviceDetails;
             switch (deviceType) {
@@ -50,6 +50,21 @@ const SubscriptionController = {
                 return res.status(404).json({ error: 'Package not found' });
             }
 
+            if (deviceType === 'activeCode') {
+                deviceDetails.activeCode = {
+                    code: activeCodeDetails.code || null,
+                };
+            } else if (deviceType === 'mac') {
+                deviceDetails.mac = {
+                    macAddress: macDetails.macAddress || null,
+                };
+            } else if (deviceType === 'm3u') {
+                deviceDetails.m3u = {
+                    userName: m3uDetails.userName || null,
+                    password: m3uDetails.password || null,
+                };
+            }
+
             const newSubscription = new Subscription({
                 user: userId,
                 packageId,
@@ -60,22 +75,6 @@ const SubscriptionController = {
                 vodBouquet: ['test'],
                 paymentMethod: 'paypal',
             });
-
-            // Set properties based on deviceType
-            if (deviceType === 'activeCode') {
-                newSubscription.deviceDetails.activeCode = {
-                    code: activeCodeDetails.code || null,
-                };
-            } else if (deviceType === 'mac') {
-                newSubscription.deviceDetails.mac = {
-                    macAddress: macDetails.macAddress || null,
-                };
-            } else if (deviceType === 'm3u') {
-                newSubscription.deviceDetails.m3u = {
-                    userName: m3uDetails.userName || null,
-                    password: m3uDetails.password || null,
-                };
-            }
 
             if (existingSubscription) {
                 if (deviceType === 'activeCode') {
@@ -102,6 +101,15 @@ const SubscriptionController = {
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Error creating/updating subscription' });
+        }
+    },
+    countSubscriptions: async (req, res) => {
+        try {
+            const totalSubscriptions = await Subscription.countDocuments();
+            res.status(200).json({ totalSubscriptions });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Error counting subscriptions' });
         }
     },
 };
