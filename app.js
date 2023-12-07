@@ -7,6 +7,7 @@ const UserRoute = require('./routes/user.route')
 const AdminRoute = require('./routes/admin.route')
 const ThemeRoute = require('./routes/theme.route')
 const SubscriptionRoute = require('./routes/subscription.route')
+const ChannelRoute = require('./routes/channel.route')
 const bodyParser = require('body-parser')
 
 const db = require("./config/db");
@@ -37,6 +38,8 @@ app.use('/admin' , AdminRoute)
 app.use('/theme' , ThemeRoute)
 //Subscription Routes
 app.use('/subscription' , SubscriptionRoute)
+//Subscription Routes
+app.use('/channel' , ChannelRoute)
 //Not Found Routes
 app.use("*", (req, res) => {
     res.status(404).json({
