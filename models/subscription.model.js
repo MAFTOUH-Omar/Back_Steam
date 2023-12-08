@@ -17,12 +17,12 @@ const channelItemSchema = new mongoose.Schema({
 const subscriptionSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'user',
         required: true,
     },
     packageId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Package',
+        ref: 'package',
         required: true,
     },
     deviceType: {

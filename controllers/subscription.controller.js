@@ -138,6 +138,42 @@ const SubscriptionController = {
             res.status(500).json({ error: 'Error updating liveBouquet, seriesBouquet, and vodBouquet' });
         }
     },
+    getAllSubscriptionsByUserId: async (req, res) => {
+        try {
+            const { userId } = req.query;
+        
+            if (!mongoose.Types.ObjectId.isValid(userId)) {
+                return res.status(400).json({ error: 'Invalid user ID' });
+            }
+        
+            const subscriptions = await Subscription.find({ user: userId }).populate('packageId').exec();
+        
+            res.status(200).json({ subscriptions });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Error fetching subscriptions for the user' });
+        }
+    },         
+    getSubscriptionById: async (req, res) => {
+        try {
+            const { subscriptionId } = req.body;
+        
+            if (!mongoose.Types.ObjectId.isValid(subscriptionId)) {
+                return res.status(400).json({ error: 'Invalid subscription ID' });
+            }
+        
+            const subscription = await Subscription.findById(subscriptionId);
+        
+            if (!subscription) {
+                return res.status(404).json({ error: 'Subscription not found' });
+            }
+        
+            res.status(200).json({ subscription });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Error fetching subscription by ID' });
+        }
+    },
 };
 
 module.exports = SubscriptionController;

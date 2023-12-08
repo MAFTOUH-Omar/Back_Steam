@@ -1,0 +1,59 @@
+{
+    "subscriptions": [
+        {
+            "deviceDetails": {
+                "activeCode": {
+                    "code": "000047313335"
+                }
+            },
+            "_id": "6573149220b021b510ebe8b4",
+            "user": "656ccddfabd3d65dd717295c",
+            "packageId": {
+                "_id": "655d5ab538f3061d491ea771",
+                "name": "Quarterly",
+                "price": "$18",
+                "duration": "3 months",
+                "etat": "Available",
+                "serviceId": "655d52c2a582ff41357804da",
+                "created": "2023-11-22T01:34:45.604Z",
+                "__v": 0
+            },
+            "deviceType": "activeCode",
+            "liveBouquet": [
+                {
+                    "_id": "6571d9043346fe83fca3c489",
+                    "name": "CHRISTMAS"
+                },
+                {
+                    "_id": "6571d9043346fe83fca3c48a",
+                    "name": "RAMADAN 2023"
+                }
+            ],
+            "seriesBouquet": [
+                {
+                    "_id": "6571dc2ea5670d848fcf823c",
+                    "name": "MULTI-SUB"
+                },
+                {
+                    "_id": "6571dc2ea5670d848fcf823d",
+                    "name": "ENGLISH"
+                }
+            ],
+            "vodBouquet": [
+                {
+                    "_id": "6571dc7d86f3dc85237f5714",
+                    "name": "MULTI-LANGUAGE"
+                },
+                {
+                    "_id": "6571dc7d86f3dc85237f5715",
+                    "name": "ENGLISH"
+                }
+            ],
+            "paymentMethod": "paypal",
+            "paymentStatus": "pending",
+            "activationStatus": false,
+            "createdAt": "2023-12-08T13:05:22.928Z",
+            "__v": 1
+        }
+    ]
+}
