@@ -2,6 +2,18 @@ const mongoose = require('mongoose');
 const User = require('./user.model');
 const Package = require('./packages.model');
 
+const channelItemSchema = new mongoose.Schema({
+    _id: {
+        type: mongoose.Schema.Types.ObjectId,
+        auto: true,
+        required: true,
+    },
+    name: {
+        type: String,
+        required: true,
+    },
+});
+
 const subscriptionSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -30,24 +42,9 @@ const subscriptionSchema = new mongoose.Schema({
             code: { type: String },
         },
     },
-    liveBouquet: [
-        {
-            type: String,
-            required: true,
-        },
-    ],
-    seriesBouquet: [
-        {
-            type: String,
-            required: true,
-        },
-    ],
-    vodBouquet: [
-        {
-            type: String,
-            required: true,
-        },
-    ],
+    liveBouquet: [channelItemSchema],
+    seriesBouquet: [channelItemSchema],
+    vodBouquet: [channelItemSchema],
     paymentMethod: {
         type: String,
         enum: ['paypal', 'stripe', 'googlePay', 'crypto'],

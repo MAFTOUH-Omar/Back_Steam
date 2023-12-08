@@ -70,9 +70,9 @@ const SubscriptionController = {
                 packageId,
                 deviceType,
                 deviceDetails,
-                liveBouquet: ['test'],
-                seriesBouquet: ['test'],
-                vodBouquet: ['test'],
+                liveBouquet: [],
+                seriesBouquet: [],
+                vodBouquet: [],
                 paymentMethod: 'paypal',
             });
 
@@ -110,6 +110,32 @@ const SubscriptionController = {
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Error counting subscriptions' });
+        }
+    },
+    createSubscriptionLiveBouquet: async (req, res) => {
+        try {
+            const { userId, packageId, subscriptionId, liveBouquet, seriesBouquet, vodBouquet } = req.body;
+
+            if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(packageId) || !mongoose.Types.ObjectId.isValid(subscriptionId)) {
+                return res.status(400).json({ error: 'Invalid user, package, or subscription ID' });
+            }
+
+            const subscription = await Subscription.findOne({ _id: subscriptionId, user: userId, packageId });
+
+            if (!subscription) {
+                return res.status(404).json({ error: 'Subscription not found' });
+            }
+
+            subscription.liveBouquet = liveBouquet || subscription.liveBouquet;
+            subscription.seriesBouquet = seriesBouquet || subscription.seriesBouquet;
+            subscription.vodBouquet = vodBouquet || subscription.vodBouquet;
+            
+            await subscription.save();
+
+            res.status(200).json({ message: 'Live Bouquet, Series Bouquet, and VOD Bouquet updated successfully', subscription });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Error updating liveBouquet, seriesBouquet, and vodBouquet' });
         }
     },
 };
