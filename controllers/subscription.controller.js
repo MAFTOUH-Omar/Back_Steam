@@ -156,24 +156,99 @@ const SubscriptionController = {
     },         
     getSubscriptionById: async (req, res) => {
         try {
-            const { subscriptionId } = req.body;
-        
+            const { subscriptionId } = req.params;
+    
             if (!mongoose.Types.ObjectId.isValid(subscriptionId)) {
                 return res.status(400).json({ error: 'Invalid subscription ID' });
             }
-        
-            const subscription = await Subscription.findById(subscriptionId);
-        
+    
+            const subscription = await Subscription.findById(subscriptionId).populate('packageId').exec();
+    
             if (!subscription) {
                 return res.status(404).json({ error: 'Subscription not found' });
             }
-        
+    
             res.status(200).json({ subscription });
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Error fetching subscription by ID' });
         }
     },
+    updateSubscription: async (req, res) => {
+        try {
+            const { userId, packageId, subscriptionId, deviceDetails, liveBouquet, seriesBouquet, vodBouquet } = req.body;
+
+            if (
+                !mongoose.Types.ObjectId.isValid(userId) ||
+                !mongoose.Types.ObjectId.isValid(packageId) ||
+                !mongoose.Types.ObjectId.isValid(subscriptionId)
+            ) {
+                return res.status(400).json({ error: 'Invalid user, package, or subscription ID' });
+            }
+
+            const subscription = await Subscription.findOne({ _id: subscriptionId, user: userId, packageId });
+
+            if (!subscription) {
+                return res.status(404).json({ error: 'Subscription not found' });
+            }
+
+            if (deviceDetails) {
+                if (deviceDetails.activeCode) {
+                    if (
+                        !deviceDetails.activeCode.code ||
+                        deviceDetails.activeCode.code.length !== 12 ||
+                        !/^\d+$/.test(deviceDetails.activeCode.code)
+                    ) {
+                        return res.status(400).json({ error: 'Invalid active code format' });
+                    }
+                }
+
+                if (deviceDetails.m3u) {
+                    if (
+                        !deviceDetails.m3u.userName ||
+                        !deviceDetails.m3u.password ||
+                        deviceDetails.m3u.userName.length !== 15 ||
+                        deviceDetails.m3u.password.length !== 10
+                    ) {
+                        return res.status(400).json({ error: 'Invalid M3U details format' });
+                    }
+                }
+
+                if (
+                    deviceDetails.mac &&
+                    deviceDetails.mac.macAddress &&
+                    !/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/.test(deviceDetails.mac.macAddress)
+                ) {
+                    return res.status(400).json({ error: 'Invalid MAC address format' });
+                }
+
+                subscription.deviceDetails = deviceDetails;
+            }
+
+            if (liveBouquet) {
+                subscription.liveBouquet = liveBouquet;
+            }
+
+            if (seriesBouquet) {
+                subscription.seriesBouquet = seriesBouquet;
+            }
+
+            if (vodBouquet) {
+                subscription.vodBouquet = vodBouquet;
+            }
+
+            if (!deviceDetails && !liveBouquet && !seriesBouquet && !vodBouquet) {
+                return res.status(200).json({ message: 'No modifications provided', subscription });
+            }
+
+            await subscription.save();
+
+            res.status(200).json({ message: 'Subscription updated successfully', subscription });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Error updating subscription' });
+        }
+    },   
 };
 
 module.exports = SubscriptionController;

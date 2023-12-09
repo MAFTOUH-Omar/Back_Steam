@@ -8,6 +8,7 @@ router.post('/create-deviceType' , auth , SubscriptionController.createSubscript
 router.post('/create-liveBouquet' , auth , SubscriptionController.createSubscriptionLiveBouquet);
 router.get('/count-subscription' , admin , SubscriptionController.countSubscriptions);
 router.get('/subscription-user' , auth , SubscriptionController.getAllSubscriptionsByUserId);
-router.get('/subscription-subscription' , auth , SubscriptionController.getSubscriptionById);
+router.get('/:subscriptionId' , auth , SubscriptionController.getSubscriptionById);
+router.put('/updateSubscription' , auth , SubscriptionController.updateSubscription);
 
 module.exports = router;
