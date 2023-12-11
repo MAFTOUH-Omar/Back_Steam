@@ -116,5 +116,11 @@
 			"notFound" : "Package not found" ,
 			"error" : "Internal server error" 
 		}
+	},
+	"authMiddleware" : {
+		"requiredTokenSecretKey" : "Authentication failed: No token or secret key provided.",
+		"invalidSecretKey" : "Authentication failed: Invalid secret key." ,
+		"notFoundUser" : "Authentication failed: User not found.",
+		"error" : "Authentication failed: Invalid token."
 	}
 }

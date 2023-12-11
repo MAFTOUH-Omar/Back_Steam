@@ -116,5 +116,11 @@
             "notFound": "Forfait non trouvé",
             "error": "Erreur interne du serveur"
         }
+    },
+    "authMiddleware": {
+        "requiredTokenSecretKey": "Échec de l'authentification : Aucun jeton ou clé secrète fourni.",
+        "invalidSecretKey": "Échec de l'authentification : Clé secrète invalide.",
+        "notFoundUser": "Échec de l'authentification : Utilisateur non trouvé.",
+        "error": "Échec de l'authentification : Jeton invalide."
     }
 }
