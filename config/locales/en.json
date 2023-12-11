@@ -52,5 +52,22 @@
 			"success" : "Profile updated successfully" ,
 			"error" : "Error updating admin profile"
 		}
+	},
+	"user" : {
+		"countUser" : {
+			"error" : "Error calculating number of users"
+		},
+		"getAllUsers" : {
+			"error" : "Error retrieving users and subscription counts"
+		},
+		"deleteUser" : {
+			"success" : "User successfully deleted" ,
+			"notFound" : "User not found" ,
+			"error" : "Error deleting user"
+		},
+		"getUserById" : {
+			"notFound" : "User not found" ,
+			"error" : "Error recovering user"
+		}
 	}
 }

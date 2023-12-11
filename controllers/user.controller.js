@@ -1,5 +1,6 @@
 const User = require('../models/user.model');
 const Subscription = require('../models/subscription.model');
+const i18n = require('../config/i18n'); 
 
 const UserController = {
     countUser: async (req, res) => {
@@ -8,7 +9,7 @@ const UserController = {
             res.status(200).json({ count: userCount });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Erreur lors du calcul du nombre de utilisateur' });
+            res.status(500).json({ error: i18n.__('user.countUser.error') });
         }
     },
     getAllUsers: async (req, res) => {
@@ -24,7 +25,7 @@ const UserController = {
             res.status(200).json({ users: usersWithSubscriptionCount });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Error retrieving users and subscription counts' });
+            res.status(500).json({ error: i18n.__('user.getAllUsers.error') });
         }
     },
     deleteUser: async (req, res) => {
@@ -34,13 +35,13 @@ const UserController = {
             const deletedUser = await User.findByIdAndDelete(userId);
 
             if (deletedUser) {
-                res.status(200).json({ message: 'Utilisateur supprimé avec succès' });
+                res.status(200).json({ message: i18n.__('user.deleteUser.success') });
             } else {
-                res.status(404).json({ error: 'Utilisateur non trouvé' });
+                res.status(404).json({ error: i18n.__('user.deleteUser.notFound') });
             }
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Erreur lors de la suppression de l\'utilisateur' });
+            res.status(500).json({ error: i18n.__('user.deleteUser.error') });
         }
     },
     getUserById: async (req, res) => {
@@ -52,11 +53,11 @@ const UserController = {
             if (user) {
                 res.status(200).json({ user });
             } else {
-                res.status(404).json({ error: 'Utilisateur non trouvé' });
+                res.status(404).json({ error: i18n.__('user.getUserById.notFound') });
             }
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Erreur lors de la récupération de l\'utilisateur' });
+            res.status(500).json({ error: i18n.__('user.getUserById.error') });
         }
     },
 };

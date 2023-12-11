@@ -52,5 +52,22 @@
             "success": "Profil mis à jour avec succès",
             "error": "Erreur lors de la mise à jour du profil administrateur"
         }
+    },
+    "user": {
+        "countUser": {
+            "error": "Erreur lors du calcul du nombre d'utilisateurs"
+        },
+        "getAllUsers": {
+            "error": "Erreur lors de la récupération des utilisateurs et du nombre d'abonnements"
+        },
+        "deleteUser": {
+            "success": "Utilisateur supprimé avec succès",
+            "notFound": "Utilisateur non trouvé",
+            "error": "Erreur lors de la suppression de l'utilisateur"
+        },
+        "getUserById": {
+            "notFound": "Utilisateur non trouvé",
+            "error": "Erreur lors de la récupération de l'utilisateur"
+        }
     }
 }
