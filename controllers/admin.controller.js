@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const Admin = require('../models/admin.model');
 const Service = require('../models/service.model');
 const qrcode = require('qrcode');
+const i18n = require('../config/i18n'); 
 
 const AdminController = {
     generateQRCode: async (data) => {
@@ -29,29 +30,26 @@ const AdminController = {
     
             return { qrCodeURL, qrCodeData , qrExprationTime};
         } catch (error) {
-            throw new Error('Erreur lors de la génération du code QR');
+            throw new Error(i18n.__('admin.generateQRCode.error'));
         }
     },    
     adminSignin: async (req, res) => {
         try {
             const admin = await Admin.findByCredentials(req.body.email, req.body.password);
     
-            // Vérifier si l'administrateur existe
             if (!admin) {
-                return res.status(401).send({ error: 'Identifiants invalides' });
+                return res.status(401).send({ error: i18n.__('admin.adminSignin.InvalidCredential') });
             }
     
-            // Générer le code QR
             const { qrCodeURL, qrCodeData, qrExprationTime } = await AdminController.generateQRCode(admin._id.toString());
     
-            // Stocker le code QR et ses données dans la base de données
             admin.QRCode = qrCodeData.code;
             admin.expirationTime = qrExprationTime.expirationTime;
             await admin.save();
     
             res.status(200).send({ _id: admin._id, qrCodeURL });
         } catch (error) {
-            res.status(500).send({ error: 'Une erreur est survenue lors de la connexion.'});
+            res.status(500).send({ error : i18n.__('admin.adminSignin.error')});
         }
     },          
     checkQRCode: async (req, res) => {
@@ -60,24 +58,24 @@ const AdminController = {
             const admin = await Admin.findById(adminId);
 
             if (!admin) {
-                return res.status(404).send({ error: 'Admin non trouvé' });
+                return res.status(404).send({ error: i18n.__('admin.checkQRCode.notFound') });
             }
 
             if (admin.QRCode !== code) {
-                return res.status(401).send({ error: 'Code QR invalide' });
+                return res.status(401).send({ error: i18n.__('admin.checkQRCode.invalidQrCode') });
             }
 
             const now = new Date();
 
             if (now > admin.expirationTime) {
-                return res.status(401).send({ error: 'Le code QR a expiré' });
+                return res.status(401).send({ error: i18n.__('admin.checkQRCode.expireQrCode') });
             }
             
             const token = jwt.sign({ _id: admin._id.toString() }, process.env.KEY);
 
             res.status(200).send({ admin, token });
         } catch (error) {
-            res.status(500).json({ error: 'Erreur lors de la vérification du code QR.' });
+            res.status(500).json({ error: i18n.__('admin.checkQRCode.error') });
         }
     },
     addAdmin: async (req, res) => {
@@ -87,7 +85,7 @@ const AdminController = {
             const existingAdmin = await Admin.findOne({ email });
 
             if (existingAdmin) {
-                return res.status(400).json({ error: 'Un administrateur avec cet email existe déjà.' });
+                return res.status(400).json({ error: i18n.__('admin.addAdmin.addAdmin') });
             }
 
             const saltRounds = 8;
@@ -112,7 +110,7 @@ const AdminController = {
             res.status(201).json({ admin: newAdmin, token });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Erreur lors de l\'ajout de l\'administrateur.' });
+            res.status(500).json({ error: i18n.__('admin.addAdmin.error') });
         }
     },
     updateAdminProfile: async (req, res) => {
@@ -123,18 +121,18 @@ const AdminController = {
             // Validate email format
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (email && !emailRegex.test(email)) {
-                return res.status(400).json({ error: 'Email format is invalid' });
+                return res.status(400).json({ error: i18n.__('admin.updateAdminProfile.checkEmail') });
             }
 
             // Check if current password is provided
             if (!currentPassword) {
-                return res.status(400).json({ error: 'Current password is required' });
+                return res.status(400).json({ error: i18n.__('admin.updateAdminProfile.requiredCurrentPassword') });
             }
 
             // Validate password strength
             const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
             if (newPassword && !passwordRegex.test(newPassword)) {
-                return res.status(400).json({ error: 'Password must be at least 8 characters long and contain at least one letter, one number, and one special character' });
+                return res.status(400).json({ error: i18n.__('admin.updateAdminProfile.checkNewPassword') });
             }
 
             // Retrieve admin from the database
@@ -143,12 +141,12 @@ const AdminController = {
             // Check if the current password matches the stored password
             const isPasswordValid = await bcrypt.compare(currentPassword, admin.password);
             if (!isPasswordValid) {
-                return res.status(401).json({ error: 'Current password is incorrect' });
+                return res.status(401).json({ error: i18n.__('admin.updateAdminProfile.invalidPassword') });
             }
 
             // Check if new password and confirm password match
             if (newPassword !== confirmPassword) {
-                return res.status(400).json({ error: 'New password and confirm password do not match' });
+                return res.status(400).json({ error: i18n.__('admin.updateAdminProfile.invalidConfirmPassword') });
             }
 
             // Update admin profile
@@ -162,10 +160,10 @@ const AdminController = {
 
             const updatedAdmin = await Admin.findByIdAndUpdate(adminId, updateFields, { new: true });
 
-            res.status(200).json({ message: 'Profil mis à jour avec succès', admin: updatedAdmin });
+            res.status(200).json({ message: i18n.__('admin.updateAdminProfile.success') , admin: updatedAdmin });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Error updating admin profile' });
+            res.status(500).json({ error: i18n.__('admin.updateAdminProfile.error') });
         }
     },
 };

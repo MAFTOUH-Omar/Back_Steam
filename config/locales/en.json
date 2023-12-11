@@ -24,5 +24,33 @@
 			"success" : "Profile updated successfully" ,
 			"error" : "Error updating profile"
         }
-    }
+    },
+	"admin" : {
+		"generateQRCode" : {
+			"error" : "Error generating QR code"
+		},
+		"adminSignin" : {
+			"InvalidCredential" : "Invalid identifiers",
+			"error" : "An error occurred while connecting."
+		},
+		"checkQRCode" : {
+			"notFound" : "Admin not found" ,
+			"invalidQrCode" : "Invalid QR code" ,
+			"expireQrCode" : "QR code has expired" ,
+			"error" : "Error checking QR code."
+		},
+		"addAdmin" : {
+			"existingAdmin"	: "An administrator with this email already exists.",
+			"error" : "Error adding administrator."
+		},
+		"updateAdminProfile" : {
+			"checkEmail" : "Email format is invalid" ,
+			"requiredCurrentPassword" : "Current password is required" ,
+			"checkNewPassword" : "Password must be at least 8 characters long and contain at least one letter, one number, and one special character" ,
+			"invalidPassword" : "Current password is incorrect" ,
+			"invalidConfirmPassword" : "New password and confirm password do not match" ,
+			"success" : "Profile updated successfully" ,
+			"error" : "Error updating admin profile"
+		}
+	}
 }
