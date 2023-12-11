@@ -78,5 +78,19 @@
             "notFound": "Thème non trouvé",
             "error": "Erreur interne du serveur"
         }
+    },
+    "service": {
+        "All": {
+            "error": "Erreur lors de la récupération des services"
+        },
+        "countServices": {
+            "error": "Erreur lors du calcul du nombre de services"
+        },
+        "getServiceById": {
+            "error": "Erreur lors de la récupération du service par ID"
+        },
+        "getAllServicesWithCredit": {
+            "error": "Erreur interne du serveur"
+        }
     }
 }

@@ -78,5 +78,19 @@
 			"notFound" : "Theme not found" ,
 			"error" : "Internal server error"
 		}
+	},
+	"service" : {
+		"All" : {
+			"error" : "Error retrieving services"
+		},
+		"countServices" : {
+			"error" : "Error calculating number of services"
+		},
+		"getServiceById" : {
+			"error" : "Error retrieving service by ID"
+		},
+		"getAllServicesWithCredit" : {
+			"error" : "Internal Server Error"
+		}
 	}
 }
