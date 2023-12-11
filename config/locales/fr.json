@@ -69,5 +69,14 @@
             "notFound": "Utilisateur non trouvé",
             "error": "Erreur lors de la récupération de l'utilisateur"
         }
+    },
+    "theme": {
+        "updateTheme": {
+            "error": "Erreur interne du serveur"
+        },
+        "getTheme": {
+            "notFound": "Thème non trouvé",
+            "error": "Erreur interne du serveur"
+        }
     }
 }
