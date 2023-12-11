@@ -10,6 +10,8 @@ const SubscriptionRoute = require('./routes/subscription.route')
 const ChannelRoute = require('./routes/channel.route')
 const StatisticRoute = require('./routes/statistic.route')
 const bodyParser = require('body-parser')
+const i18n = require('./config/i18n');
+const langMiddleware = require('./middlewares/lang.middleware');
 
 const db = require("./config/db");
 const cors = require('cors');
@@ -19,6 +21,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json())
+app.use(langMiddleware);
 
 // main
 app.get('/', (req, res) => {

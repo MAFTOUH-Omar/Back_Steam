@@ -2,6 +2,7 @@ const User = require('../models/user.model');
 const jwt = require('jsonwebtoken');
 const bcrypt = require("bcryptjs");
 const sendCredentialsEmail = require("../mail/cardinality.mail");
+const i18n = require('../config/i18n'); 
 
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d|\W).+$/;
 
@@ -13,14 +14,14 @@ const AuthController = {
             const existingUser = await User.findOne({ email });
         
             if (existingUser) {
-                return res.status(400).json({ error: 'Email already exists' });
+                return res.status(400).json({ error: i18n.__('auth.signUp.existingUser') });
             }
 
             if (
                 password.length < 8 ||
                 !password.match(passwordRegex)
             ) {
-                return res.status(400).json({error:'Le mot de passe doit contenir au moins 8 caractères, inclure des majuscules, des chiffres ou des caractères spéciaux.',});
+                return res.status(400).json({error : i18n.__('auth.signUp.checkPassword'),});
             }
       
           const encryptedPassword = await bcrypt.hash(password, 10);
@@ -45,10 +46,10 @@ const AuthController = {
                 token,
             });
       
-            res.status(200).json({message:'Inscription réussie. Veuillez vérifier votre e-mail pour confirmer.',user,token,});
+            res.status(200).json({message : i18n.__('auth.signUp.success') , user,token,});
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Erreur lors de l\'inscription' });
+            res.status(500).json({ error : i18n.__('auth.signUp.error') });
         }
     },
     SignIn: async (req, res) => {
@@ -56,17 +57,17 @@ const AuthController = {
             const { email, password } = req.body;
     
             if (!(email && password)) {
-                return res.status(400).send("All input is required");
+                return res.status(400).send(i18n.__('auth.signIn.required'));
             }
     
             const user = await User.findOne({ email });
 
             if (!user) {
-                return res.status(401).json({ error: 'Adresse e-mail ou mot de passe incorrect' });
+                return res.status(401).json({ error: i18n.__('auth.signIn.notFoundUser') });
             }
     
             if (!user.confirmed) {
-                return res.status(401).json({ error: 'Veuillez confirmer votre adresse e-mail pour vous connecter.' });
+                return res.status(401).json({ error: i18n.__('auth.signIn.confirm') });
             }
     
             if (user && (await bcrypt.compare(password, user.password))) {
@@ -79,15 +80,15 @@ const AuthController = {
                         FirstName: user.FirstName,
                         LastName: user.LastName
                     },
-                    message: "Login successfull",
+                    message: i18n.__('auth.signIn.success'),
                     accessToken: token,
                 });
             } else {
-                return res.status(401).json({ error: 'Adresse e-mail ou mot de passe incorrect' });
+                return res.status(401).json({ error: i18n.__('auth.signIn.notFoundUser') });
             }
         } catch (error) {
             console.error(error);
-            return res.status(500).json({ error: 'Erreur lors de la connexion' });
+            return res.status(500).json({ error: i18n.__('auth.signIn.error') });
         }
     },
     ConfirmSingnUp: async (req, res) => {
@@ -98,7 +99,7 @@ const AuthController = {
             res.redirect(process.env.CONFIRMATION_Link);
         } catch (error) {
             console.error(error);
-            res.status(500).send('Error confirming registration.');
+            res.status(500).send(i18n.__('auth.ConfirmSingnUp.error'));
         }
     },
     Profile: async (req, res) => {
@@ -108,13 +109,13 @@ const AuthController = {
             const user = await User.findOne({ email });
         
             if (!user) {
-                return res.status(404).json({ error: 'Utilisateur non trouvé' });
+                return res.status(404).json({ error: i18n.__('auth.Profile.notFound') });
             }
         
             const isPasswordValid = await bcrypt.compare(password, user.password);
         
             if (!isPasswordValid) {
-                return res.status(401).json({ error: 'Mot de passe incorrect' });
+                return res.status(401).json({ error: i18n.__('auth.Profile.inValidPassword') });
             }
         
             if (newFirstName) user.FirstName = newFirstName;
@@ -122,11 +123,11 @@ const AuthController = {
         
             if (newPassword) {
                 if (newPassword.length < 8 || !newPassword.match(passwordRegex)) {
-                    return res.status(400).json({error:'Le nouveau mot de passe doit contenir au moins 8 caractères, inclure des majuscules, des chiffres ou des caractères spéciaux.',});
+                    return res.status(400).json({error : i18n.__('auth.Profile.checkNewPassword'),});
                 }
         
                 if (newPassword !== confirmPassword) {
-                    return res.status(400).json({ error: 'Les nouveaux mots de passe ne correspondent pas' });
+                    return res.status(400).json({ error : i18n.__('auth.Profile.confirmNewPassword') });
                 }
         
                 const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -138,7 +139,7 @@ const AuthController = {
             const token = jwt.sign({ id: user._id }, process.env.KEY);
         
             res.status(200).json({
-                message: 'Profil mis à jour avec succès',
+                message: i18n.__('auth.Profile.success'),
                 user: {
                 id: user._id,
                 email: user.email,
@@ -149,7 +150,7 @@ const AuthController = {
             });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Erreur lors de la mise à jour du profil' });
+            res.status(500).json({ error: i18n.__('auth.Profile.error') });
         }
     },
 };

@@ -1,0 +1,28 @@
+{
+    "auth" : {
+        "signUp" : {
+            "existingUser" : "Email already exists",
+            "checkPassword" : "The password must be at least 8 characters long, include capital letters, numbers or special characters.",
+            "success" : "Successful registration. Please check your email to confirm.",
+            "error" : "Error during registration"
+        },
+        "signIn" : {
+			"required" : "All input is required" ,
+			"notFoundUser" : "Incorrect email address or password" ,
+			"confirm" : "Please confirm your email address to log in." ,
+            "success" : "Login successfull" ,
+			"error" : "Error connecting"
+        },
+        "ConfirmSingnUp" : {
+			"error" :  "Error confirming registration."
+        },
+        "Profile" : {
+			"notFound" : "User not found" ,
+			"inValidPassword" : "Incorrect password" ,
+			"checkNewPassword" : "The new password must be at least 8 characters long, include capital letters, numbers or special characters." ,
+			"confirmNewPassword" : "New passwords do not match" ,
+			"success" : "Profile updated successfully" ,
+			"error" : "Error updating profile"
+        }
+    }
+}
