@@ -2,6 +2,7 @@ const Service = require('../models/service.model');
 const Package = require('../models/packages.model');
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Types.ObjectId;
+const i18n = require('../config/i18n'); 
 
 const id = new ObjectId()
 
@@ -11,7 +12,7 @@ const Packages = {
             const { serviceId } = req.params;
 
             if (!mongoose.Types.ObjectId.isValid(serviceId)) {
-                return res.status(400).json({ error: 'Invalid serviceId' });
+                return res.status(400).json({ error: i18n.__('package.getAvailablePackagesForService.invalidSericeId') });
             }
 
             const availablePackages = await Package.find({ etat: 'Available', serviceId: new mongoose.Types.ObjectId(serviceId) }).populate('serviceId', 'name');
@@ -19,7 +20,7 @@ const Packages = {
             res.status(200).json({ packages: availablePackages });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Error retrieving available packages.' });
+            res.status(500).json({ error: i18n.__('package.getAvailablePackagesForService.error') });
         }
     },
     disablePackage: async (req, res) => {
@@ -31,7 +32,7 @@ const Packages = {
             res.status(200).json({ package: disabledPackage });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Erreur lors de la désactivation du package.' });
+            res.status(500).json({ error: i18n.__('package.disablePackage.error') });
         }
     },
     enablePackage: async (req, res) => {
@@ -43,7 +44,7 @@ const Packages = {
             res.status(200).json({ package: enabledPackage });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Erreur lors de l\'activation du package.' });
+            res.status(500).json({ error: i18n.__('package.enablePackage.error') });
         }
     },
     PackagesByServiceId : async(req, res) => {
@@ -51,7 +52,7 @@ const Packages = {
             const { serviceId } = req.params;
 
             if (!mongoose.Types.ObjectId.isValid(serviceId)) {
-                return res.status(400).json({ error: 'Invalid serviceId' });
+                return res.status(400).json({ error: i18n.__('package.PackagesByServiceId.invalidSericeId') });
             }
       
             const packages = await Package.find({ serviceId }).populate('serviceId', 'name');
@@ -59,7 +60,7 @@ const Packages = {
             res.status(200).json({ packages });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Erreur lors de la récupération des packages par serviceId' });
+            res.status(500).json({ error: i18n.__('package.PackagesByServiceId.error') });
         }
     },
     countPackages : async (req, res) => {
@@ -68,7 +69,7 @@ const Packages = {
             res.status(200).json({ count: packageCount });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Error counting packages' });
+            res.status(500).json({ error: i18n.__('package.countPackages.error') });
         }
     },
     getPackageById: async (req, res) => {
@@ -76,19 +77,19 @@ const Packages = {
             const { id } = req.params;
 
             if (!mongoose.Types.ObjectId.isValid(id)) {
-                return res.status(400).json({ error: 'Invalid package ID' });
+                return res.status(400).json({ error: i18n.__('package.getPackageById.invalidPackageId') });
             }
         
             const package = await Package.findById(id).populate('serviceId', 'name');
         
             if (!package) {
-                return res.status(404).json({ status: 'fail', message: 'Package not found' });
+                return res.status(404).json({ status: 'fail', message: i18n.__('package.getPackageById.notFound') });
             }
         
             res.status(200).json({ status: 'success', data: { package } });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ status: 'fail', message: 'Internal server error' });
+            res.status(500).json({ status: 'fail', message: i18n.__('package.getPackageById.error') });
         }
     },
 }

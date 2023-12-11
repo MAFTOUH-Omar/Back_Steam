@@ -92,5 +92,29 @@
 		"getAllServicesWithCredit" : {
 			"error" : "Internal Server Error"
 		}
+	},
+	"package" : {
+		"getAvailablePackagesForService" : {
+			"invalidSericeId" : "Invalid serviceId" ,
+			"error" : "Error retrieving available packages."
+		},
+		"disablePackage" : {
+			"error" : "Error deactivating the package."
+		},
+		"enablePackage" : {
+			"error" : "Error activating the package."
+		},
+		"PackagesByServiceId" : {
+			"invalidSericeId" : "Invalid serviceId" ,
+			"error" : "Error retrieving packages by serviceId"
+		},
+		"countPackages" : {
+			"error" : "Error counting packages"
+		},
+		"getPackageById" : {
+			"invalidPackageId" : "Invalid package ID" ,
+			"notFound" : "Package not found" ,
+			"error" : "Internal server error" 
+		}
 	}
 }

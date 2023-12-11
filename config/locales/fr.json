@@ -92,5 +92,29 @@
         "getAllServicesWithCredit": {
             "error": "Erreur interne du serveur"
         }
+    },
+    "package": {
+        "getAvailablePackagesForService": {
+            "invalidSericeId": "ID de service invalide",
+            "error": "Erreur lors de la récupération des forfaits disponibles."
+        },
+        "disablePackage": {
+            "error": "Erreur lors de la désactivation du forfait."
+        },
+        "enablePackage": {
+            "error": "Erreur lors de l'activation du forfait."
+        },
+        "PackagesByServiceId": {
+            "invalidSericeId": "ID de service invalide",
+            "error": "Erreur lors de la récupération des forfaits par ID de service"
+        },
+        "countPackages": {
+            "error": "Erreur lors du décompte des forfaits"
+        },
+        "getPackageById": {
+            "invalidPackageId": "ID de forfait invalide",
+            "notFound": "Forfait non trouvé",
+            "error": "Erreur interne du serveur"
+        }
     }
 }
