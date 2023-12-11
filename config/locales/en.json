@@ -122,5 +122,8 @@
 		"invalidSecretKey" : "Authentication failed: Invalid secret key." ,
 		"notFoundUser" : "Authentication failed: User not found.",
 		"error" : "Authentication failed: Invalid token."
-	}
+	},
+    "adminMiddleware" : {
+        "error" : "Unauthorized. Please authenticate as administrator."
+    }
 }

@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const Admin = require('../models/admin.model');
+const i18n = require('../config/i18n'); 
 
 const authAdmin = async (req, res, next) => {
   try {
@@ -21,7 +22,7 @@ const authAdmin = async (req, res, next) => {
 
     next();
   } catch (error) {
-    res.status(401).send({ error: 'Non autorisé. Veuillez vous authentifier en tant qu\'administrateur.' });
+    res.status(401).send({ error: i18n.__('adminMiddleware.error') });
   }
 };
 

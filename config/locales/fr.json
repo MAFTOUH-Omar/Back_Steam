@@ -122,5 +122,8 @@
         "invalidSecretKey": "Échec de l'authentification : Clé secrète invalide.",
         "notFoundUser": "Échec de l'authentification : Utilisateur non trouvé.",
         "error": "Échec de l'authentification : Jeton invalide."
+    },
+    "adminMiddleware" : {
+        "error" : "Non autorisé. Veuillez vous authentifier en tant qu'administrateur."
     }
 }
