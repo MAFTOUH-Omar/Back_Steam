@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Subscription = require('../models/subscription.model');
 const Package = require('../models/packages.model');
+const i18n = require('../config/i18n'); 
 
 const SubscriptionController = {
     createSubscriptionDeviceType: async (req, res) => {
@@ -8,7 +9,7 @@ const SubscriptionController = {
             const { userId, packageId, deviceType, m3uDetails, macDetails, activeCodeDetails } = req.body;
 
             if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(packageId)) {
-                return res.status(400).json({ error: 'Invalid user or package ID' });
+                return res.status(400).json({ error: i18n.__('subscription.createSubscriptionDeviceType.invalidUserPackageId') });
             }
 
             let existingSubscription = await Subscription.findOne({ user: userId, packageId, deviceType });
@@ -17,7 +18,7 @@ const SubscriptionController = {
             switch (deviceType) {
                 case 'm3u':
                     if (!m3uDetails || !m3uDetails.userName || !m3uDetails.password || m3uDetails.userName.length !== 15 || m3uDetails.password.length !== 10) {
-                        return res.status(400).json({ error: 'Invalid M3U details format' });
+                        return res.status(400).json({ error: i18n.__('subscription.createSubscriptionDeviceType.invalidM3uFormat') });
                     }
                     deviceDetails = {
                         userName: m3uDetails.userName || null,
@@ -27,7 +28,7 @@ const SubscriptionController = {
                 case 'mac':
                     const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
                     if (!macDetails || !macRegex.test(macDetails.macAddress)) {
-                        return res.status(400).json({ error: 'Invalid MAC address format' });
+                        return res.status(400).json({ error: i18n.__('subscription.createSubscriptionDeviceType.invalidMacFormat') });
                     }
                     deviceDetails = {
                         macAddress: macDetails.macAddress || null,
@@ -35,19 +36,19 @@ const SubscriptionController = {
                     break;
                 case 'activeCode':
                     if (!activeCodeDetails || !activeCodeDetails.code || activeCodeDetails.code.length !== 12 || !/^\d+$/.test(activeCodeDetails.code)) {
-                        return res.status(400).json({ error: 'Invalid active code format' });
+                        return res.status(400).json({ error: i18n.__('subscription.createSubscriptionDeviceType.invalidActiveCodeFormat') });
                     }
                     deviceDetails = {
                         code: activeCodeDetails.code || null,
                     };
                     break;
                 default:
-                    return res.status(400).json({ error: 'Invalid device type' });
+                    return res.status(400).json({ error: i18n.__('subscription.createSubscriptionDeviceType.invalidDeviceType') });
             }
 
             const package = await Package.findById(packageId);
             if (!package) {
-                return res.status(404).json({ error: 'Package not found' });
+                return res.status(404).json({ error: i18n.__('subscription.createSubscriptionDeviceType.notFound') });
             }
 
             if (deviceType === 'activeCode') {
@@ -92,15 +93,15 @@ const SubscriptionController = {
                     };
                 }
                 await existingSubscription.save();
-                return res.status(200).json({ message: 'Subscription details updated successfully', subscription: existingSubscription });
+                return res.status(200).json({ message: i18n.__('subscription.createSubscriptionDeviceType.updateSuccess'), subscription: existingSubscription });
             }
 
             await newSubscription.save();
 
-            res.status(201).json({ message: 'Subscription created successfully', subscription: newSubscription });
+            res.status(201).json({ message: i18n.__('subscription.createSubscriptionDeviceType.createSuccess') , subscription: newSubscription });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Error creating/updating subscription' });
+            res.status(500).json({ error: i18n.__('subscription.createSubscriptionDeviceType.error') });
         }
     },
     countSubscriptions: async (req, res) => {

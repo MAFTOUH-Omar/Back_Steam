@@ -125,5 +125,18 @@
     },
     "adminMiddleware" : {
         "error" : "Non autorisé. Veuillez vous authentifier en tant qu'administrateur."
+    },
+    "subscription": {
+        "createSubscriptionDeviceType": {
+            "invalidUserPackageId": "ID d'utilisateur ou de forfait invalide",
+            "invalidM3uFormat": "Format M3U invalide",
+            "invalidMacFormat": "Format d'adresse MAC invalide",
+            "invalidActiveCodeFormat": "Format de code actif invalide",
+            "invalidDeviceType": "Type de périphérique invalide",
+            "notFound": "Forfait non trouvé",
+            "updateSuccess": "Détails de l'abonnement mis à jour avec succès",
+            "createSuccess": "Abonnement créé avec succès",
+            "error": "Erreur lors de la création/mise à jour de l'abonnement"
+        }
     }
 }

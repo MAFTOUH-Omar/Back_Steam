@@ -125,5 +125,18 @@
 	},
     "adminMiddleware" : {
         "error" : "Unauthorized. Please authenticate as administrator."
-    }
+    },
+	"subscription" : {
+		"createSubscriptionDeviceType" : {
+			"invalidUserPackageId" : "Invalid user or package ID",
+			"invalidM3uFormat" : "Invalid user or package ID",
+			"invalidMacFormat" : "Invalid MAC address format" ,
+			"invalidActiveCodeFormat" : "Invalid active code format" ,
+			"invalidDeviceType" : "Invalid device type" ,
+			"notFound" : "Package not found",
+			"updateSuccess" : "Subscription details updated successfully" ,
+			"createSuccess" : "Subscription created successfully" ,
+			"error" : "Error creating/updating subscription"
+		}
+	}
 }
