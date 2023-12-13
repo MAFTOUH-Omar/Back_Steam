@@ -137,6 +137,34 @@
             "updateSuccess": "Détails de l'abonnement mis à jour avec succès",
             "createSuccess": "Abonnement créé avec succès",
             "error": "Erreur lors de la création/mise à jour de l'abonnement"
-        }
+        },
+        "countSubscriptions": {
+            "error": "Erreur lors du décompte des abonnements"
+        },
+        "createSubscriptionLiveBouquet": {
+            "invalidUserPackageSubscriptionId": "ID d'utilisateur, de forfait ou d'abonnement invalide",
+            "notFound": "Abonnement non trouvé",
+            "updateSuccess": "Live Bouquet, Series Bouquet et VOD Bouquet mis à jour avec succès",
+            "error": "Erreur lors de la mise à jour du Live Bouquet, du Series Bouquet et du VOD Bouquet"
+        },
+        "getAllSubscriptionsByUserId": {
+            "invalidUserId": "ID d'utilisateur invalide",
+            "error": "Erreur lors de la récupération des abonnements pour l'utilisateur"
+        },
+        "getSubscriptionById": {
+            "invalidSubscriptionId": "ID d'abonnement invalide",
+            "notFound": "Abonnement non trouvé",
+            "error": "Erreur lors de la récupération de l'abonnement par ID"
+        },
+        "updateSubscription": {
+            "invalidUserPackageSubscriptionId": "ID d'utilisateur, de forfait ou d'abonnement invalide",
+            "notFound": "Abonnement non trouvé",
+            "invalidActiveCodeFormat": "Format de code actif invalide",
+            "invalidM3uFormat": "Format de détails M3U invalide",
+            "invalidMacFormat": "Format d'adresse MAC invalide",
+            "noModification": "Aucune modification fournie",
+            "success": "Abonnement mis à jour avec succès",
+            "error": "Erreur lors de la mise à jour de l'abonnement"
+        }  
     }
 }

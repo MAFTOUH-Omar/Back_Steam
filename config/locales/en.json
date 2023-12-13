@@ -137,6 +137,34 @@
 			"updateSuccess" : "Subscription details updated successfully" ,
 			"createSuccess" : "Subscription created successfully" ,
 			"error" : "Error creating/updating subscription"
+		},
+		"countSubscriptions" : {
+			"error" : "Error counting subscriptions"
+		},
+		"createSubscriptionLiveBouquet" : {
+			"invalidUserPackageSubscriptionId" : "Invalid user, package, or subscription ID",
+			"notFound" : "Subscription not found" ,
+			"updateSuccess" : "Live Bouquet, Series Bouquet, and VOD Bouquet updated successfully" ,
+			"error" : "Error updating liveBouquet, seriesBouquet, and vodBouquet"
+		},
+		"getAllSubscriptionsByUserId" : {
+			"invalidUserId" : "Invalid user ID" , 
+			"error" : "Error fetching subscriptions for the user"
+		},
+		"getSubscriptionById" : {
+			"invalidSubscriptionId" : "Invalid subscription ID" ,
+			"notFound" : "Subscription not found" ,
+			"error" : "Error fetching subscription by ID"
+		},
+		"updateSubscription" : {
+			"invalidUserPackageSubscriptionId" : "Invalid user, package, or subscription ID" ,
+			"notFound" : "Subscription not found" ,
+			"invalidActiveCodeFormat" : "Invalid active code format" ,
+			"invalidM3uFormat" : "Invalid M3U details format" ,
+			"invalidMacFormat" : "Invalid MAC address format" ,
+			"noModification" : "No modifications provided" ,
+			"success" : "Subscription updated successfully" ,
+			"error" : "Error updating subscription"
 		}
 	}
 }

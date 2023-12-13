@@ -110,7 +110,7 @@ const SubscriptionController = {
             res.status(200).json({ totalSubscriptions });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Error counting subscriptions' });
+            res.status(500).json({ error: i18n.__('subscription.countSubscriptions.error') });
         }
     },
     createSubscriptionLiveBouquet: async (req, res) => {
@@ -118,13 +118,13 @@ const SubscriptionController = {
             const { userId, packageId, subscriptionId, liveBouquet, seriesBouquet, vodBouquet } = req.body;
 
             if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(packageId) || !mongoose.Types.ObjectId.isValid(subscriptionId)) {
-                return res.status(400).json({ error: 'Invalid user, package, or subscription ID' });
+                return res.status(400).json({ error: i18n.__('subscription.createSubscriptionLiveBouquet.invalidUserPackageSubscriptionId') });
             }
 
             const subscription = await Subscription.findOne({ _id: subscriptionId, user: userId, packageId });
 
             if (!subscription) {
-                return res.status(404).json({ error: 'Subscription not found' });
+                return res.status(404).json({ error: i18n.__('subscription.createSubscriptionLiveBouquet.notFound') });
             }
 
             subscription.liveBouquet = liveBouquet || subscription.liveBouquet;
@@ -133,10 +133,10 @@ const SubscriptionController = {
             
             await subscription.save();
 
-            res.status(200).json({ message: 'Live Bouquet, Series Bouquet, and VOD Bouquet updated successfully', subscription });
+            res.status(200).json({ message: i18n.__('subscription.createSubscriptionLiveBouquet.updateSuccess'), subscription });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Error updating liveBouquet, seriesBouquet, and vodBouquet' });
+            res.status(500).json({ error: i18n.__('subscription.createSubscriptionLiveBouquet.error') });
         }
     },
     getAllSubscriptionsByUserId: async (req, res) => {
@@ -144,7 +144,7 @@ const SubscriptionController = {
             const { userId } = req.query;
         
             if (!mongoose.Types.ObjectId.isValid(userId)) {
-                return res.status(400).json({ error: 'Invalid user ID' });
+                return res.status(400).json({ error: i18n.__('subscription.getAllSubscriptionsByUserId.invalidUserId')  });
             }
         
             const subscriptions = await Subscription.find({ user: userId }).populate('packageId').exec();
@@ -152,7 +152,7 @@ const SubscriptionController = {
             res.status(200).json({ subscriptions });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Error fetching subscriptions for the user' });
+            res.status(500).json({ error: i18n.__('subscription.getAllSubscriptionsByUserId.error')  });
         }
     },         
     getSubscriptionById: async (req, res) => {
@@ -160,19 +160,19 @@ const SubscriptionController = {
             const { subscriptionId } = req.params;
     
             if (!mongoose.Types.ObjectId.isValid(subscriptionId)) {
-                return res.status(400).json({ error: 'Invalid subscription ID' });
+                return res.status(400).json({ error: i18n.__('subscription.getSubscriptionById.invalidSubscriptionId') });
             }
     
             const subscription = await Subscription.findById(subscriptionId).populate('packageId').exec();
     
             if (!subscription) {
-                return res.status(404).json({ error: 'Subscription not found' });
+                return res.status(404).json({ error: i18n.__('subscription.getSubscriptionById.notFound') });
             }
     
             res.status(200).json({ subscription });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Error fetching subscription by ID' });
+            res.status(500).json({ error: i18n.__('subscription.getSubscriptionById.error') });
         }
     },
     updateSubscription: async (req, res) => {
@@ -184,13 +184,13 @@ const SubscriptionController = {
                 !mongoose.Types.ObjectId.isValid(packageId) ||
                 !mongoose.Types.ObjectId.isValid(subscriptionId)
             ) {
-                return res.status(400).json({ error: 'Invalid user, package, or subscription ID' });
+                return res.status(400).json({ error: i18n.__('subscription.updateSubscription.invalidUserPackageSubscriptionId')});
             }
 
             const subscription = await Subscription.findOne({ _id: subscriptionId, user: userId, packageId });
 
-            if (!subscription) {
-                return res.status(404).json({ error: 'Subscription not found' });
+            if (!subscription) {updateSubscription
+                return res.status(404).json({ error: i18n.__('subscription.updateSubscription.notFound') });
             }
 
             if (deviceDetails) {
@@ -200,7 +200,7 @@ const SubscriptionController = {
                         deviceDetails.activeCode.code.length !== 12 ||
                         !/^\d+$/.test(deviceDetails.activeCode.code)
                     ) {
-                        return res.status(400).json({ error: 'Invalid active code format' });
+                        return res.status(400).json({ error: i18n.__('subscription.updateSubscription.invalidActiveCodeFormat') });
                     }
                 }
 
@@ -211,7 +211,7 @@ const SubscriptionController = {
                         deviceDetails.m3u.userName.length !== 15 ||
                         deviceDetails.m3u.password.length !== 10
                     ) {
-                        return res.status(400).json({ error: 'Invalid M3U details format' });
+                        return res.status(400).json({ error: i18n.__('subscription.updateSubscription.invalidM3uFormat') });
                     }
                 }
 
@@ -220,7 +220,7 @@ const SubscriptionController = {
                     deviceDetails.mac.macAddress &&
                     !/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/.test(deviceDetails.mac.macAddress)
                 ) {
-                    return res.status(400).json({ error: 'Invalid MAC address format' });
+                    return res.status(400).json({ error:i18n.__('subscription.updateSubscription.invalidMacFormat') });
                 }
 
                 subscription.deviceDetails = deviceDetails;
@@ -239,15 +239,15 @@ const SubscriptionController = {
             }
 
             if (!deviceDetails && !liveBouquet && !seriesBouquet && !vodBouquet) {
-                return res.status(200).json({ message: 'No modifications provided', subscription });
+                return res.status(200).json({ message: i18n.__('subscription.updateSubscription.noModification'), subscription });
             }
 
             await subscription.save();
 
-            res.status(200).json({ message: 'Subscription updated successfully', subscription });
+            res.status(200).json({ message: i18n.__('subscription.updateSubscription.success'), subscription });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Error updating subscription' });
+            res.status(500).json({ error: i18n.__('subscription.updateSubscription.error') });
         }
     },   
 };
