@@ -166,5 +166,16 @@
 			"success" : "Subscription updated successfully" ,
 			"error" : "Error updating subscription"
 		}
+	},
+	"authRoute" : {
+		"allInputRequired" : "All input is required"
+	},
+	"statisticRoute" : {
+		"subscription" : {
+			"error" : "Internal Server Error"
+		},
+		"userSubscription" : {
+			"error" : "Internal Server Error"
+		}
 	}
 }
