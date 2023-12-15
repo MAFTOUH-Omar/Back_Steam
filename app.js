@@ -25,7 +25,7 @@ app.use(langMiddleware);
 
 // main
 app.get('/', (req, res) => {
-    res.send('All Oki');
+    res.json({ message: 'All Oki' });
 });
 
 // Auth User routes
@@ -56,6 +56,8 @@ app.use("*", (req, res) => {
 });
 
 db.connect();
-app.listen(process.env.APP_PORT, () => {
+const server = app.listen(process.env.APP_PORT, () => {
     console.log(`Server is running on port ${process.env.APP_PORT}`);
 });
+
+module.exports = server;
