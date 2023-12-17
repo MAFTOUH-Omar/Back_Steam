@@ -96,7 +96,7 @@ const AuthController = {
         try {
             const decodedToken = jwt.verify(token, process.env.KEY);
             await User.findByIdAndUpdate(decodedToken.user_id, { confirmed: true });
-            res.redirect(process.env.CONFIRMATION_Link);
+            res.redirect(process.env.CONFIRMATION_LINK);
         } catch (error) {
             console.error(error);
             res.status(500).send(i18n.__('auth.ConfirmSingnUp.error'));
