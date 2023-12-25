@@ -1,181 +1,190 @@
 {
-    "auth" : {
-        "signUp" : {
-            "existingUser" : "Email already exists",
-            "checkPassword" : "The password must be at least 8 characters long, include capital letters, numbers or special characters.",
-            "success" : "Successful registration. Please check your email to confirm.",
-            "error" : "Error during registration"
-        },
-        "signIn" : {
-			"required" : "All input is required" ,
-			"notFoundUser" : "Incorrect email address or password" ,
-			"confirm" : "Please confirm your email address to log in." ,
-            "success" : "Login successfull" ,
-			"error" : "Error connecting"
-        },
-        "ConfirmSingnUp" : {
-			"error" :  "Error confirming registration."
-        },
-        "Profile" : {
-			"notFound" : "User not found" ,
-			"inValidPassword" : "Incorrect password" ,
-			"checkNewPassword" : "The new password must be at least 8 characters long, include capital letters, numbers or special characters." ,
-			"confirmNewPassword" : "New passwords do not match" ,
-			"success" : "Profile updated successfully" ,
-			"error" : "Error updating profile"
-        }
-    },
-	"admin" : {
-		"generateQRCode" : {
-			"error" : "Error generating QR code"
+	"auth": {
+		"signUp": {
+			"existingUser": "Email already exists",
+			"checkPassword": "The password must be at least 8 characters long, include capital letters, numbers or special characters.",
+			"success": "Successful registration. Please check your email to confirm.",
+			"error": "Error during registration"
 		},
-		"adminSignin" : {
-			"InvalidCredential" : "Invalid identifiers",
-			"error" : "An error occurred while connecting."
+		"signIn": {
+			"required": "All input is required",
+			"notFoundUser": "Incorrect email address or password",
+			"confirm": "Please confirm your email address to log in.",
+			"success": "Login successfull",
+			"error": "Error connecting"
 		},
-		"checkQRCode" : {
-			"notFound" : "Admin not found" ,
-			"invalidQrCode" : "Invalid QR code" ,
-			"expireQrCode" : "QR code has expired" ,
-			"error" : "Error checking QR code."
+		"ConfirmSingnUp": {
+			"error": "Error confirming registration."
 		},
-		"addAdmin" : {
-			"existingAdmin"	: "An administrator with this email already exists.",
-			"error" : "Error adding administrator."
-		},
-		"updateAdminProfile" : {
-			"checkEmail" : "Email format is invalid" ,
-			"requiredCurrentPassword" : "Current password is required" ,
-			"checkNewPassword" : "Password must be at least 8 characters long and contain at least one letter, one number, and one special character" ,
-			"invalidPassword" : "Current password is incorrect" ,
-			"invalidConfirmPassword" : "New password and confirm password do not match" ,
-			"success" : "Profile updated successfully" ,
-			"error" : "Error updating admin profile"
+		"Profile": {
+			"notFound": "User not found",
+			"inValidPassword": "Incorrect password",
+			"checkNewPassword": "The new password must be at least 8 characters long, include capital letters, numbers or special characters.",
+			"confirmNewPassword": "New passwords do not match",
+			"success": "Profile updated successfully",
+			"error": "Error updating profile"
 		}
 	},
-	"user" : {
-		"countUser" : {
-			"error" : "Error calculating number of users"
+	"admin": {
+		"generateQRCode": {
+			"error": "Error generating QR code"
 		},
-		"getAllUsers" : {
-			"error" : "Error retrieving users and subscription counts"
+		"authenticateWithAuthenticator": {
+			"notFound": "Admin not found",
+			"invalidCode": "Invalid Code",
+			"expireQrCode": "QR code has expired",
+			"error": "An error occurred while connecting."
 		},
-		"deleteUser" : {
-			"success" : "User successfully deleted" ,
-			"notFound" : "User not found" ,
-			"error" : "Error deleting user"
+		"adminSignin": {
+			"InvalidCredential": "Invalid identifiers",
+			"error": "An error occurred while connecting."
 		},
-		"getUserById" : {
-			"notFound" : "User not found" ,
-			"error" : "Error recovering user"
+		"checkQRCode": {
+			"notFound": "Admin not found",
+			"invalidQrCode": "Invalid QR code",
+			"expireQrCode": "QR code has expired",
+			"error": "Error checking QR code."
+		},
+		"addAdmin": {
+			"existingAdmin": "An administrator with this email already exists.",
+			"error": "Error adding administrator."
+		},
+		"updateAdminProfile": {
+			"checkEmail": "Email format is invalid",
+			"requiredCurrentPassword": "Current password is required",
+			"checkNewPassword": "Password must be at least 8 characters long and contain at least one letter, one number, and one special character",
+			"invalidPassword": "Current password is incorrect",
+			"invalidConfirmPassword": "New password and confirm password do not match",
+			"success": "Profile updated successfully",
+			"error": "Error updating admin profile"
 		}
 	},
-	"theme" : {
-		"updateTheme" : {
-			"error" : "Internal server error"
+	"user": {
+		"countUser": {
+			"error": "Error calculating number of users"
 		},
-		"getTheme" : {
-			"notFound" : "Theme not found" ,
-			"error" : "Internal server error"
+		"getAllUsers": {
+			"error": "Error retrieving users and subscription counts"
+		},
+		"deleteUser": {
+			"success": "User successfully deleted",
+			"notFound": "User not found",
+			"error": "Error deleting user"
+		},
+		"getUserById": {
+			"notFound": "User not found",
+			"error": "Error recovering user"
 		}
 	},
-	"service" : {
-		"All" : {
-			"error" : "Error retrieving services"
+	"theme": {
+		"updateTheme": {
+			"error": "Internal server error"
 		},
-		"countServices" : {
-			"error" : "Error calculating number of services"
-		},
-		"getServiceById" : {
-			"error" : "Error retrieving service by ID"
-		},
-		"getAllServicesWithCredit" : {
-			"error" : "Internal Server Error"
+		"getTheme": {
+			"notFound": "Theme not found",
+			"error": "Internal server error"
 		}
 	},
-	"package" : {
-		"getAvailablePackagesForService" : {
-			"invalidSericeId" : "Invalid serviceId" ,
-			"error" : "Error retrieving available packages."
+	"service": {
+		"All": {
+			"error": "Error retrieving services"
 		},
-		"disablePackage" : {
-			"error" : "Error deactivating the package."
+		"countServices": {
+			"error": "Error calculating number of services"
 		},
-		"enablePackage" : {
-			"error" : "Error activating the package."
+		"getServiceById": {
+			"error": "Error retrieving service by ID"
 		},
-		"PackagesByServiceId" : {
-			"invalidSericeId" : "Invalid serviceId" ,
-			"error" : "Error retrieving packages by serviceId"
-		},
-		"countPackages" : {
-			"error" : "Error counting packages"
-		},
-		"getPackageById" : {
-			"invalidPackageId" : "Invalid package ID" ,
-			"notFound" : "Package not found" ,
-			"error" : "Internal server error" 
+		"getAllServicesWithCredit": {
+			"error": "Internal Server Error"
 		}
 	},
-	"authMiddleware" : {
-		"requiredTokenSecretKey" : "Authentication failed: No token or secret key provided.",
-		"invalidSecretKey" : "Authentication failed: Invalid secret key." ,
-		"notFoundUser" : "Authentication failed: User not found.",
-		"error" : "Authentication failed: Invalid token."
-	},
-    "adminMiddleware" : {
-        "error" : "Unauthorized. Please authenticate as administrator."
-    },
-	"subscription" : {
-		"createSubscriptionDeviceType" : {
-			"invalidUserPackageId" : "Invalid user or package ID",
-			"invalidM3uFormat" : "Invalid user or package ID",
-			"invalidMacFormat" : "Invalid MAC address format" ,
-			"invalidActiveCodeFormat" : "Invalid active code format" ,
-			"invalidDeviceType" : "Invalid device type" ,
-			"notFound" : "Package not found",
-			"updateSuccess" : "Subscription details updated successfully" ,
-			"createSuccess" : "Subscription created successfully" ,
-			"error" : "Error creating/updating subscription"
+	"package": {
+		"getAvailablePackagesForService": {
+			"invalidSericeId": "Invalid serviceId",
+			"error": "Error retrieving available packages."
 		},
-		"countSubscriptions" : {
-			"error" : "Error counting subscriptions"
+		"disablePackage": {
+			"error": "Error deactivating the package."
 		},
-		"createSubscriptionLiveBouquet" : {
-			"invalidUserPackageSubscriptionId" : "Invalid user, package, or subscription ID",
-			"notFound" : "Subscription not found" ,
-			"updateSuccess" : "Live Bouquet, Series Bouquet, and VOD Bouquet updated successfully" ,
-			"error" : "Error updating liveBouquet, seriesBouquet, and vodBouquet"
+		"enablePackage": {
+			"error": "Error activating the package."
 		},
-		"getAllSubscriptionsByUserId" : {
-			"invalidUserId" : "Invalid user ID" , 
-			"error" : "Error fetching subscriptions for the user"
+		"PackagesByServiceId": {
+			"invalidSericeId": "Invalid serviceId",
+			"error": "Error retrieving packages by serviceId"
 		},
-		"getSubscriptionById" : {
-			"invalidSubscriptionId" : "Invalid subscription ID" ,
-			"notFound" : "Subscription not found" ,
-			"error" : "Error fetching subscription by ID"
+		"countPackages": {
+			"error": "Error counting packages"
 		},
-		"updateSubscription" : {
-			"invalidUserPackageSubscriptionId" : "Invalid user, package, or subscription ID" ,
-			"notFound" : "Subscription not found" ,
-			"invalidActiveCodeFormat" : "Invalid active code format" ,
-			"invalidM3uFormat" : "Invalid M3U details format" ,
-			"invalidMacFormat" : "Invalid MAC address format" ,
-			"noModification" : "No modifications provided" ,
-			"success" : "Subscription updated successfully" ,
-			"error" : "Error updating subscription"
+		"getPackageById": {
+			"invalidPackageId": "Invalid package ID",
+			"notFound": "Package not found",
+			"error": "Internal server error"
+		},
+		"updatePackagePrice": {
+			"missingPrice": "package.updatePackagePrice.missingPrice"
 		}
 	},
-	"authRoute" : {
-		"allInputRequired" : "All input is required"
+	"authMiddleware": {
+		"requiredTokenSecretKey": "Authentication failed: No token or secret key provided.",
+		"invalidSecretKey": "Authentication failed: Invalid secret key.",
+		"notFoundUser": "Authentication failed: User not found.",
+		"error": "Authentication failed: Invalid token."
 	},
-	"statisticRoute" : {
-		"subscription" : {
-			"error" : "Internal Server Error"
+	"adminMiddleware": {
+		"error": "Unauthorized. Please authenticate as administrator."
+	},
+	"subscription": {
+		"createSubscriptionDeviceType": {
+			"invalidUserPackageId": "Invalid user or package ID",
+			"invalidM3uFormat": "Invalid user or package ID",
+			"invalidMacFormat": "Invalid MAC address format",
+			"invalidActiveCodeFormat": "Invalid active code format",
+			"invalidDeviceType": "Invalid device type",
+			"notFound": "Package not found",
+			"updateSuccess": "Subscription details updated successfully",
+			"createSuccess": "Subscription created successfully",
+			"error": "Error creating/updating subscription"
 		},
-		"userSubscription" : {
-			"error" : "Internal Server Error"
+		"countSubscriptions": {
+			"error": "Error counting subscriptions"
+		},
+		"createSubscriptionLiveBouquet": {
+			"invalidUserPackageSubscriptionId": "Invalid user, package, or subscription ID",
+			"notFound": "Subscription not found",
+			"updateSuccess": "Live Bouquet, Series Bouquet, and VOD Bouquet updated successfully",
+			"error": "Error updating liveBouquet, seriesBouquet, and vodBouquet"
+		},
+		"getAllSubscriptionsByUserId": {
+			"invalidUserId": "Invalid user ID",
+			"error": "Error fetching subscriptions for the user"
+		},
+		"getSubscriptionById": {
+			"invalidSubscriptionId": "Invalid subscription ID",
+			"notFound": "Subscription not found",
+			"error": "Error fetching subscription by ID"
+		},
+		"updateSubscription": {
+			"invalidUserPackageSubscriptionId": "Invalid user, package, or subscription ID",
+			"notFound": "Subscription not found",
+			"invalidActiveCodeFormat": "Invalid active code format",
+			"invalidM3uFormat": "Invalid M3U details format",
+			"invalidMacFormat": "Invalid MAC address format",
+			"noModification": "No modifications provided",
+			"success": "Subscription updated successfully",
+			"error": "Error updating subscription"
+		}
+	},
+	"authRoute": {
+		"allInputRequired": "All input is required"
+	},
+	"statisticRoute": {
+		"subscription": {
+			"error": "Internal Server Error"
+		},
+		"userSubscription": {
+			"error": "Internal Server Error"
 		}
 	}
 }

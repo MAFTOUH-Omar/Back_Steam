@@ -9,6 +9,7 @@ const ThemeRoute = require('./routes/theme.route')
 const SubscriptionRoute = require('./routes/subscription.route')
 const ChannelRoute = require('./routes/channel.route')
 const StatisticRoute = require('./routes/statistic.route')
+const SuperAdminRoute = require('./routes/superAdmin.route')
 const bodyParser = require('body-parser')
 const i18n = require('./config/i18n');
 const langMiddleware = require('./middlewares/lang.middleware');
@@ -46,6 +47,8 @@ app.use('/subscription' , SubscriptionRoute)
 app.use('/channel' , ChannelRoute)
 //Statistic Routes
 app.use('/statistic' , StatisticRoute)
+//Statistic Routes
+app.use('/superAdmin' , SuperAdminRoute)
 //Not Found Routes
 app.use("*", (req, res) => {
     res.status(404).json({

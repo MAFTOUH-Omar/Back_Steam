@@ -8,6 +8,7 @@ router.get('/available-packages/:serviceId', Packages.getAvailablePackagesForSer
 router.get('/count-packages', admin ,Packages.countPackages);
 router.get('/:serviceId', admin ,Packages.getPackageById);
 router.patch('/enable/:serviceId', admin ,Packages.enablePackage);
-router.patch('/disable/:serviceId', admin ,Packages.disablePackage);  
+router.patch('/disable/:serviceId', admin ,Packages.disablePackage); 
+router.put('/:id/update-price', admin , Packages.updatePackagePrice); 
 
 module.exports = router;

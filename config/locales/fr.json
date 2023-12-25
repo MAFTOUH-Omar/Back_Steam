@@ -1,181 +1,190 @@
 {
-    "auth": {
-        "signUp": {
-            "existingUser": "L'e-mail existe déjà",
-            "checkPassword": "Le mot de passe doit comporter au moins 8 caractères, inclure des lettres majuscules, des chiffres ou des caractères spéciaux.",
-            "success": "Inscription réussie. Veuillez vérifier votre e-mail pour confirmer.",
-            "error": "Erreur lors de l'inscription"
-        },
-        "signIn": {
-            "required": "Tous les champs sont obligatoires",
-            "notFoundUser": "Adresse e-mail ou mot de passe incorrect",
-            "confirm": "Veuillez confirmer votre adresse e-mail pour vous connecter.",
-            "success": "Connexion réussie",
-            "error": "Erreur lors de la connexion"
-        },
-        "ConfirmSingnUp": {
-            "error": "Erreur lors de la confirmation de l'inscription."
-        },
-        "Profile": {
-            "notFound": "Utilisateur non trouvé",
-            "inValidPassword": "Mot de passe incorrect",
-            "checkNewPassword": "Le nouveau mot de passe doit comporter au moins 8 caractères, inclure des lettres majuscules, des chiffres ou des caractères spéciaux.",
-            "confirmNewPassword": "Les nouveaux mots de passe ne correspondent pas",
-            "success": "Profil mis à jour avec succès",
-            "error": "Erreur lors de la mise à jour du profil"
-        }
-    },
-    "admin": {
-        "generateQRCode": {
-            "error": "Erreur lors de la génération du code QR"
-        },
-        "adminSignin": {
-            "InvalidCredential": "Identifiants invalides",
-            "error": "Une erreur s'est produite lors de la connexion."
-        },
-        "checkQRCode": {
-            "notFound": "Admin non trouvé",
-            "invalidQrCode": "Code QR invalide",
-            "expireQrCode": "Le code QR a expiré",
-            "error": "Erreur lors de la vérification du code QR."
-        },
-        "addAdmin": {
-            "existingAdmin": "Un administrateur avec cette adresse e-mail existe déjà.",
-            "error": "Erreur lors de l'ajout de l'administrateur."
-        },
-        "updateAdminProfile": {
-            "checkEmail": "Le format de l'e-mail est invalide",
-            "requiredCurrentPassword": "Le mot de passe actuel est requis",
-            "checkNewPassword": "Le mot de passe doit comporter au moins 8 caractères et contenir au moins une lettre, un chiffre et un caractère spécial",
-            "invalidPassword": "Le mot de passe actuel est incorrect",
-            "invalidConfirmPassword": "Le nouveau mot de passe et la confirmation ne correspondent pas",
-            "success": "Profil mis à jour avec succès",
-            "error": "Erreur lors de la mise à jour du profil administrateur"
-        }
-    },
-    "user": {
-        "countUser": {
-            "error": "Erreur lors du calcul du nombre d'utilisateurs"
-        },
-        "getAllUsers": {
-            "error": "Erreur lors de la récupération des utilisateurs et du nombre d'abonnements"
-        },
-        "deleteUser": {
-            "success": "Utilisateur supprimé avec succès",
-            "notFound": "Utilisateur non trouvé",
-            "error": "Erreur lors de la suppression de l'utilisateur"
-        },
-        "getUserById": {
-            "notFound": "Utilisateur non trouvé",
-            "error": "Erreur lors de la récupération de l'utilisateur"
-        }
-    },
-    "theme": {
-        "updateTheme": {
-            "error": "Erreur interne du serveur"
-        },
-        "getTheme": {
-            "notFound": "Thème non trouvé",
-            "error": "Erreur interne du serveur"
-        }
-    },
-    "service": {
-        "All": {
-            "error": "Erreur lors de la récupération des services"
-        },
-        "countServices": {
-            "error": "Erreur lors du calcul du nombre de services"
-        },
-        "getServiceById": {
-            "error": "Erreur lors de la récupération du service par ID"
-        },
-        "getAllServicesWithCredit": {
-            "error": "Erreur interne du serveur"
-        }
-    },
-    "package": {
-        "getAvailablePackagesForService": {
-            "invalidSericeId": "ID de service invalide",
-            "error": "Erreur lors de la récupération des forfaits disponibles."
-        },
-        "disablePackage": {
-            "error": "Erreur lors de la désactivation du forfait."
-        },
-        "enablePackage": {
-            "error": "Erreur lors de l'activation du forfait."
-        },
-        "PackagesByServiceId": {
-            "invalidSericeId": "ID de service invalide",
-            "error": "Erreur lors de la récupération des forfaits par ID de service"
-        },
-        "countPackages": {
-            "error": "Erreur lors du décompte des forfaits"
-        },
-        "getPackageById": {
-            "invalidPackageId": "ID de forfait invalide",
-            "notFound": "Forfait non trouvé",
-            "error": "Erreur interne du serveur"
-        }
-    },
-    "authMiddleware": {
-        "requiredTokenSecretKey": "Échec de l'authentification : Aucun jeton ou clé secrète fourni.",
-        "invalidSecretKey": "Échec de l'authentification : Clé secrète invalide.",
-        "notFoundUser": "Échec de l'authentification : Utilisateur non trouvé.",
-        "error": "Échec de l'authentification : Jeton invalide."
-    },
-    "adminMiddleware" : {
-        "error" : "Non autorisé. Veuillez vous authentifier en tant qu'administrateur."
-    },
-    "subscription": {
-        "createSubscriptionDeviceType": {
-            "invalidUserPackageId": "ID d'utilisateur ou de forfait invalide",
-            "invalidM3uFormat": "Format M3U invalide",
-            "invalidMacFormat": "Format d'adresse MAC invalide",
-            "invalidActiveCodeFormat": "Format de code actif invalide",
-            "invalidDeviceType": "Type de périphérique invalide",
-            "notFound": "Forfait non trouvé",
-            "updateSuccess": "Détails de l'abonnement mis à jour avec succès",
-            "createSuccess": "Abonnement créé avec succès",
-            "error": "Erreur lors de la création/mise à jour de l'abonnement"
-        },
-        "countSubscriptions": {
-            "error": "Erreur lors du décompte des abonnements"
-        },
-        "createSubscriptionLiveBouquet": {
-            "invalidUserPackageSubscriptionId": "ID d'utilisateur, de forfait ou d'abonnement invalide",
-            "notFound": "Abonnement non trouvé",
-            "updateSuccess": "Live Bouquet, Series Bouquet et VOD Bouquet mis à jour avec succès",
-            "error": "Erreur lors de la mise à jour du Live Bouquet, du Series Bouquet et du VOD Bouquet"
-        },
-        "getAllSubscriptionsByUserId": {
-            "invalidUserId": "ID d'utilisateur invalide",
-            "error": "Erreur lors de la récupération des abonnements pour l'utilisateur"
-        },
-        "getSubscriptionById": {
-            "invalidSubscriptionId": "ID d'abonnement invalide",
-            "notFound": "Abonnement non trouvé",
-            "error": "Erreur lors de la récupération de l'abonnement par ID"
-        },
-        "updateSubscription": {
-            "invalidUserPackageSubscriptionId": "ID d'utilisateur, de forfait ou d'abonnement invalide",
-            "notFound": "Abonnement non trouvé",
-            "invalidActiveCodeFormat": "Format de code actif invalide",
-            "invalidM3uFormat": "Format de détails M3U invalide",
-            "invalidMacFormat": "Format d'adresse MAC invalide",
-            "noModification": "Aucune modification fournie",
-            "success": "Abonnement mis à jour avec succès",
-            "error": "Erreur lors de la mise à jour de l'abonnement"
-        }  
-    },
-    "authRoute": {
-        "allInputRequired": "Tous les champs sont obligatoires"
-    },
-    "statisticRoute": {
-        "subscription": {
-            "error": "Erreur interne du serveur"
-        },
-        "userSubscription": {
-            "error": "Erreur interne du serveur"
-        }
-    }
+	"auth": {
+		"signUp": {
+			"existingUser": "L'e-mail existe déjà",
+			"checkPassword": "Le mot de passe doit comporter au moins 8 caractères, inclure des lettres majuscules, des chiffres ou des caractères spéciaux.",
+			"success": "Inscription réussie. Veuillez vérifier votre e-mail pour confirmer.",
+			"error": "Erreur lors de l'inscription"
+		},
+		"signIn": {
+			"required": "Tous les champs sont obligatoires",
+			"notFoundUser": "Adresse e-mail ou mot de passe incorrect",
+			"confirm": "Veuillez confirmer votre adresse e-mail pour vous connecter.",
+			"success": "Connexion réussie",
+			"error": "Erreur lors de la connexion"
+		},
+		"ConfirmSingnUp": {
+			"error": "Erreur lors de la confirmation de l'inscription."
+		},
+		"Profile": {
+			"notFound": "Utilisateur non trouvé",
+			"inValidPassword": "Mot de passe incorrect",
+			"checkNewPassword": "Le nouveau mot de passe doit comporter au moins 8 caractères, inclure des lettres majuscules, des chiffres ou des caractères spéciaux.",
+			"confirmNewPassword": "Les nouveaux mots de passe ne correspondent pas",
+			"success": "Profil mis à jour avec succès",
+			"error": "Erreur lors de la mise à jour du profil"
+		}
+	},
+	"admin": {
+		"generateQRCode": {
+			"error": "Erreur lors de la génération du code QR"
+		},
+		"authenticateWithAuthenticator": {
+			"notFound": "Administrateur non trouvé",
+			"invalidCode": "Code invalide",
+			"expireQrCode": "Le code QR a expiré",
+			"error": "Une erreur s'est produite lors de la connexion."
+		},
+		"adminSignin": {
+			"InvalidCredential": "Identifiants invalides",
+			"error": "Une erreur s'est produite lors de la connexion."
+		},
+		"checkQRCode": {
+			"notFound": "Admin non trouvé",
+			"invalidQrCode": "Code QR invalide",
+			"expireQrCode": "Le code QR a expiré",
+			"error": "Erreur lors de la vérification du code QR."
+		},
+		"addAdmin": {
+			"existingAdmin": "Un administrateur avec cette adresse e-mail existe déjà.",
+			"error": "Erreur lors de l'ajout de l'administrateur."
+		},
+		"updateAdminProfile": {
+			"checkEmail": "Le format de l'e-mail est invalide",
+			"requiredCurrentPassword": "Le mot de passe actuel est requis",
+			"checkNewPassword": "Le mot de passe doit comporter au moins 8 caractères et contenir au moins une lettre, un chiffre et un caractère spécial",
+			"invalidPassword": "Le mot de passe actuel est incorrect",
+			"invalidConfirmPassword": "Le nouveau mot de passe et la confirmation ne correspondent pas",
+			"success": "Profil mis à jour avec succès",
+			"error": "Erreur lors de la mise à jour du profil administrateur"
+		},
+		"enableTwoFactor": {
+			"error": "admin.enableTwoFactor.error"
+		}
+	},
+	"user": {
+		"countUser": {
+			"error": "Erreur lors du calcul du nombre d'utilisateurs"
+		},
+		"getAllUsers": {
+			"error": "Erreur lors de la récupération des utilisateurs et du nombre d'abonnements"
+		},
+		"deleteUser": {
+			"success": "Utilisateur supprimé avec succès",
+			"notFound": "Utilisateur non trouvé",
+			"error": "Erreur lors de la suppression de l'utilisateur"
+		},
+		"getUserById": {
+			"notFound": "Utilisateur non trouvé",
+			"error": "Erreur lors de la récupération de l'utilisateur"
+		}
+	},
+	"theme": {
+		"updateTheme": {
+			"error": "Erreur interne du serveur"
+		},
+		"getTheme": {
+			"notFound": "Thème non trouvé",
+			"error": "Erreur interne du serveur"
+		}
+	},
+	"service": {
+		"All": {
+			"error": "Erreur lors de la récupération des services"
+		},
+		"countServices": {
+			"error": "Erreur lors du calcul du nombre de services"
+		},
+		"getServiceById": {
+			"error": "Erreur lors de la récupération du service par ID"
+		},
+		"getAllServicesWithCredit": {
+			"error": "Erreur interne du serveur"
+		}
+	},
+	"package": {
+		"getAvailablePackagesForService": {
+			"invalidSericeId": "ID de service invalide",
+			"error": "Erreur lors de la récupération des forfaits disponibles."
+		},
+		"disablePackage": {
+			"error": "Erreur lors de la désactivation du forfait."
+		},
+		"enablePackage": {
+			"error": "Erreur lors de l'activation du forfait."
+		},
+		"PackagesByServiceId": {
+			"invalidSericeId": "ID de service invalide",
+			"error": "Erreur lors de la récupération des forfaits par ID de service"
+		},
+		"countPackages": {
+			"error": "Erreur lors du décompte des forfaits"
+		},
+		"getPackageById": {
+			"invalidPackageId": "ID de forfait invalide",
+			"notFound": "Forfait non trouvé",
+			"error": "Erreur interne du serveur"
+		}
+	},
+	"authMiddleware": {
+		"requiredTokenSecretKey": "Échec de l'authentification : Aucun jeton ou clé secrète fourni.",
+		"invalidSecretKey": "Échec de l'authentification : Clé secrète invalide.",
+		"notFoundUser": "Échec de l'authentification : Utilisateur non trouvé.",
+		"error": "Échec de l'authentification : Jeton invalide."
+	},
+	"adminMiddleware": {
+		"error": "Non autorisé. Veuillez vous authentifier en tant qu'administrateur."
+	},
+	"subscription": {
+		"createSubscriptionDeviceType": {
+			"invalidUserPackageId": "ID d'utilisateur ou de forfait invalide",
+			"invalidM3uFormat": "Format M3U invalide",
+			"invalidMacFormat": "Format d'adresse MAC invalide",
+			"invalidActiveCodeFormat": "Format de code actif invalide",
+			"invalidDeviceType": "Type de périphérique invalide",
+			"notFound": "Forfait non trouvé",
+			"updateSuccess": "Détails de l'abonnement mis à jour avec succès",
+			"createSuccess": "Abonnement créé avec succès",
+			"error": "Erreur lors de la création/mise à jour de l'abonnement"
+		},
+		"countSubscriptions": {
+			"error": "Erreur lors du décompte des abonnements"
+		},
+		"createSubscriptionLiveBouquet": {
+			"invalidUserPackageSubscriptionId": "ID d'utilisateur, de forfait ou d'abonnement invalide",
+			"notFound": "Abonnement non trouvé",
+			"updateSuccess": "Live Bouquet, Series Bouquet et VOD Bouquet mis à jour avec succès",
+			"error": "Erreur lors de la mise à jour du Live Bouquet, du Series Bouquet et du VOD Bouquet"
+		},
+		"getAllSubscriptionsByUserId": {
+			"invalidUserId": "ID d'utilisateur invalide",
+			"error": "Erreur lors de la récupération des abonnements pour l'utilisateur"
+		},
+		"getSubscriptionById": {
+			"invalidSubscriptionId": "ID d'abonnement invalide",
+			"notFound": "Abonnement non trouvé",
+			"error": "Erreur lors de la récupération de l'abonnement par ID"
+		},
+		"updateSubscription": {
+			"invalidUserPackageSubscriptionId": "ID d'utilisateur, de forfait ou d'abonnement invalide",
+			"notFound": "Abonnement non trouvé",
+			"invalidActiveCodeFormat": "Format de code actif invalide",
+			"invalidM3uFormat": "Format de détails M3U invalide",
+			"invalidMacFormat": "Format d'adresse MAC invalide",
+			"noModification": "Aucune modification fournie",
+			"success": "Abonnement mis à jour avec succès",
+			"error": "Erreur lors de la mise à jour de l'abonnement"
+		}
+	},
+	"authRoute": {
+		"allInputRequired": "Tous les champs sont obligatoires"
+	},
+	"statisticRoute": {
+		"subscription": {
+			"error": "Erreur interne du serveur"
+		},
+		"userSubscription": {
+			"error": "Erreur interne du serveur"
+		}
+	}
 }

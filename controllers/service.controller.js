@@ -6,20 +6,21 @@ const Services = {
     All : async (req, res) => {
         try {
             const services = await Service.find();
-
+    
             const servicesWithPackages = await Promise.all(
                 services.map(async (service) => {
-                    const packages = await Package.find({ serviceId: service._id });
-
+                    const allPackages = await Package.find({ serviceId: service._id });
+                    const availablePackages = allPackages.filter(package => package.etat === 'Available');
+    
                     return {
                         _id: service._id,
                         name: service.name,
-                        packageCount: packages.length,
-                        packages: packages
+                        packageCount: availablePackages.length,
+                        packages: availablePackages
                     };
                 })
             );
-
+    
             res.status(200).json(servicesWithPackages);
         } catch (error) {
             console.error(error);
