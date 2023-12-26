@@ -17,7 +17,7 @@ const SubscriptionController = {
             let deviceDetails;
             switch (deviceType) {
                 case 'm3u':
-                    if (!m3uDetails || !m3uDetails.userName || !m3uDetails.password || m3uDetails.userName.length !== 15 || m3uDetails.password.length !== 10) {
+                    if (!m3uDetails || !m3uDetails.userName || !m3uDetails.password || m3uDetails.userName.length !== 8 || m3uDetails.password.length !== 8) {
                         return res.status(400).json({ error: i18n.__('subscription.createSubscriptionDeviceType.invalidM3uFormat') });
                     }
                     deviceDetails = {
@@ -208,8 +208,8 @@ const SubscriptionController = {
                     if (
                         !deviceDetails.m3u.userName ||
                         !deviceDetails.m3u.password ||
-                        deviceDetails.m3u.userName.length !== 15 ||
-                        deviceDetails.m3u.password.length !== 10
+                        deviceDetails.m3u.userName.length !== 8 ||
+                        deviceDetails.m3u.password.length !== 8
                     ) {
                         return res.status(400).json({ error: i18n.__('subscription.updateSubscription.invalidM3uFormat') });
                     }

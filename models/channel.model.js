@@ -10,6 +10,10 @@ const channelItemSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    selected: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const channelSchema = new mongoose.Schema({
