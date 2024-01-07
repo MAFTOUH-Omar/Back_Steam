@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const bcrypt = require("bcryptjs");
 
 const adminSchema = new mongoose.Schema({
     adminName: {
@@ -18,7 +17,7 @@ const adminSchema = new mongoose.Schema({
         unique: true,
         trim: true,
     },
-    QRCode: {
+    code: {
         type: Number,
         default: null,
     },    
@@ -26,28 +25,7 @@ const adminSchema = new mongoose.Schema({
         type: Date,
         default: null,
     },
-    services: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Service'
-    }],
 });
 
-adminSchema.statics.findByCredentials = async function (email, password) {
-    const admin = await this.findOne({ email });
-  
-    if (!admin) {
-      throw new Error('Identifiants invalides');
-    }
-  
-    const isPasswordValid = await bcrypt.compare(password, admin.password);
-  
-    if (!isPasswordValid) {
-      throw new Error('Identifiants invalides');
-    }
-  
-    return admin;
-};
-
-const Admin = mongoose.model('Admin', adminSchema);
-  
+const Admin = mongoose.model('AdminSteam', adminSchema);
 module.exports = Admin;

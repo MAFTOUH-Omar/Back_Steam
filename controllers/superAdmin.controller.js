@@ -5,28 +5,37 @@ const i18n = require('../config/i18n');
 const generateVerificationCode = require('../helpers/generateVerificationCode');
 const sendCredentialsEmail = require("../mail/superAdmin.mail");
 const Admin = require('../models/admin.model');
+const Service =  require('../models/service.model')
+
+
+const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+};
+  
+const validatePassword = (password) => {
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d|[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    return passwordRegex.test(password);
+};
 
 const SuperAdminController = {
     signIn: async (req, res) => {
         const { email, password } = req.body;
 
         try {
-            // Vérifier si l'utilisateur existe
             const superAdmin = await SuperAdmin.findOne({ email });
             if (!superAdmin) {
                 return res.status(401).json({ message: 'Adresse e-mail ou mot de passe incorrect.' });
             }
 
-            // Vérifier le mot de passe
             const isPasswordValid = await bcrypt.compare(password, superAdmin.password);
             if (!isPasswordValid) {
                 return res.status(401).json({ message: 'Adresse e-mail ou mot de passe incorrect.' });
             }
 
-            // Générer et sauvegarder le code de vérification avec expiration de 5 minutes
             const code = generateVerificationCode();
             superAdmin.code = code;
-            superAdmin.expirationTime = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes d'expiration
+            superAdmin.expirationTime = new Date(Date.now() + 5 * 60 * 1000);
             await superAdmin.save();
 
             await sendCredentialsEmail({
@@ -34,7 +43,7 @@ const SuperAdminController = {
                 code
             })
             
-            return res.status(200).json({ code, message: 'Code généré avec succès.' });
+            return res.status(200).json({ message: 'Connexion réussie , Veuillez vérifier votre e-mail pour confirmer'});
         } catch (error) {
             console.error(error);
             return res.status(500).json({ message: 'Une erreur s\'est produite lors de la connexion.' });
@@ -44,16 +53,13 @@ const SuperAdminController = {
         const { SuperadminName, password, email } = req.body;
     
         try {
-            // Vérifier si l'utilisateur existe déjà
             const existingAdmin = await SuperAdmin.findOne({ email });
             if (existingAdmin) {
                 return res.status(400).json({ message: 'Un super admin avec cette adresse e-mail existe déjà.' });
             }
         
-            // Hasher le mot de passe
             const hashedPassword = await bcrypt.hash(password, 10);
         
-            // Générer et sauvegarder le code de vérification avec expiration de 5 minutes
             const code = generateVerificationCode();
         
             const newSuperAdmin = new SuperAdmin({
@@ -61,7 +67,7 @@ const SuperAdminController = {
                 password: hashedPassword,
                 email,
                 code,
-                expirationTime: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes d'expiration
+                expirationTime: new Date(Date.now() + 5 * 60 * 1000),
             });
         
             await newSuperAdmin.save();
@@ -75,32 +81,104 @@ const SuperAdminController = {
     verifyCode: async (email, code) => {
         try {
             const superAdmin = await SuperAdmin.findOne({ email });
-        
-            // Vérifier si le super admin existe
+    
             if (!superAdmin) {
                 return { status: 404, message: 'Super admin introuvable.' };
             }
-        
-            // Vérifier si le code est valide
+
             if (superAdmin.code === parseInt(code) && superAdmin.expirationTime > new Date()) {
-                // Le code est valide et n'a pas expiré
-        
-                // Mettre à jour le super admin pour indiquer que le code a été utilisé
                 superAdmin.code = null;
                 superAdmin.expirationTime = null;
                 await superAdmin.save();
-        
-                // Créer un token
-                const token = jwt.sign({ _id: superAdmin._id }, process.env.KEY);
-        
+    
+                const token = jwt.sign({ _id: superAdmin._id }, process.env.KEY)
+    
                 return { status: 200, message: 'Code de validation valide.', token };
             } else {
-                // Le code est invalide ou a expiré
                 return { status: 400, message: 'Code de validation invalide ou expiré.' };
-            }   
+            }
         } catch (error) {
             console.error(error);
             return { status: 500, message: 'Une erreur s\'est produite lors de la vérification du code.' };
+        }
+    },
+    addAdmin: async (req, res) => {
+        try {
+            const { adminName, email, password } = req.body;
+        
+            if (!validateEmail(email)) {
+                return res.status(400).json({ error: 'Adresse e-mail invalide.' });
+            }
+        
+            if (!validatePassword(password)) {
+                return res.status(400).json({
+                    error: 'Le mot de passe doit contenir au moins 8 caractères et inclure au moins un chiffre ou un caractère spécial.',
+                });
+            }
+        
+            const existingAdmin = await Admin.findOne({ email });
+        
+            if (existingAdmin) {
+                return res.status(400).json({ error: 'Un admin avec cette adresse e-mail existe déjà.' });
+            }
+        
+            const saltRounds = 8;
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
+        
+            const newAdmin = new Admin({
+                adminName,
+                email,
+                password: hashedPassword,
+            });
+        
+            await newAdmin.save();
+        
+            res.status(201).json({ admin: newAdmin });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Une erreur s\'est produite lors de la vérification du code.' });
+        }
+    },
+    enableService : async (req , res) => {
+        try {
+            const { _id } = req.params;
+    
+            const service = await Service.findById(_id);
+            if (!service) {
+                return res.status(404).json({ message: "Service not found" });
+            }
+    
+            if (!service.active) {
+                service.active = true;
+                await service.save();
+                return res.status(200).json({ message: "Service activated successfully", service });
+            }
+    
+            return res.status(400).json({ message: "Service is already active" });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: "Internal Server Error" });
+        }
+    },
+    disableService : async (req , res) => {
+        try {
+            const { _id } = req.params;
+    
+            const service = await Service.findById(_id);
+            if (!service) {
+                return res.status(404).json({ message: "Service not found" });
+            }
+    
+            if (service.active) {
+                service.active = false;
+                await service.save();
+                return res.status(200).json({ message: "Service deactivated successfully", service });
+            }
+    
+            return res.status(400).json({ message: "Service is already deactivated" });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ message: "Internal Server Error" });
         }
     },
 };

@@ -11,6 +11,7 @@
 			"notFoundUser": "Incorrect email address or password",
 			"confirm": "Please confirm your email address to log in.",
 			"success": "Login successfull",
+			"userBanned": "Your account has been banned. Please contact support for more information",
 			"error": "Error connecting"
 		},
 		"ConfirmSingnUp": {
@@ -57,6 +58,10 @@
 			"invalidConfirmPassword": "New password and confirm password do not match",
 			"success": "Profile updated successfully",
 			"error": "Error updating admin profile"
+		},
+		"createNormalAdmin": {
+			"error": "admin.createNormalAdmin.error",
+			"adminExists": "admin.createNormalAdmin.adminExists"
 		}
 	},
 	"user": {
@@ -74,6 +79,11 @@
 		"getUserById": {
 			"notFound": "User not found",
 			"error": "Error recovering user"
+		},
+		"authorizeUser": {
+			"success": "L'accès de l'utilisateur a été autorisé avec succès.",
+			"notFound": "Utilisateur non trouvé lors de l'autorisation.",
+			"error": "Une erreur s'est produite lors de l'autorisation de l'accès de l'utilisateur."
 		}
 	},
 	"theme": {

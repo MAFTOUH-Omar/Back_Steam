@@ -55,33 +55,37 @@ const AuthController = {
     SignIn: async (req, res) => {
         try {
             const { email, password } = req.body;
-    
+        
             if (!(email && password)) {
                 return res.status(400).send(i18n.__('auth.signIn.required'));
             }
-    
+        
             const user = await User.findOne({ email });
-
+        
             if (!user) {
                 return res.status(401).json({ error: i18n.__('auth.signIn.notFoundUser') });
             }
-    
+        
+            if (user.banned) {
+                return res.status(401).json({ error: i18n.__('auth.signIn.userBanned') });
+            }
+        
             if (!user.confirmed) {
                 return res.status(401).json({ error: i18n.__('auth.signIn.confirm') });
             }
-    
+        
             if (user && (await bcrypt.compare(password, user.password))) {
                 const token = jwt.sign({ id: user._id }, process.env.KEY);
                 user.token = token;
                 return res.status(200).json({
-                    user: {
-                        id: user._id,
-                        email: user.email,
-                        FirstName: user.FirstName,
-                        LastName: user.LastName
-                    },
-                    message: i18n.__('auth.signIn.success'),
-                    accessToken: token,
+                user: {
+                    id: user._id,
+                    email: user.email,
+                    FirstName: user.FirstName,
+                    LastName: user.LastName,
+                },
+                message: i18n.__('auth.signIn.success'),
+                accessToken: token,
                 });
             } else {
                 return res.status(401).json({ error: i18n.__('auth.signIn.notFoundUser') });
@@ -90,7 +94,7 @@ const AuthController = {
             console.error(error);
             return res.status(500).json({ error: i18n.__('auth.signIn.error') });
         }
-    },
+    },      
     ConfirmSingnUp: async (req, res) => {
         const token = req.params.token;
         try {

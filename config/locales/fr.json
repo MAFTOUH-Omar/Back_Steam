@@ -11,6 +11,7 @@
 			"notFoundUser": "Adresse e-mail ou mot de passe incorrect",
 			"confirm": "Veuillez confirmer votre adresse e-mail pour vous connecter.",
 			"success": "Connexion réussie",
+			"userBanned": "Votre compte a été banni. Veuillez contacter le support pour plus d'informations.",
 			"error": "Erreur lors de la connexion"
 		},
 		"ConfirmSingnUp": {
@@ -77,6 +78,11 @@
 		"getUserById": {
 			"notFound": "Utilisateur non trouvé",
 			"error": "Erreur lors de la récupération de l'utilisateur"
+		},
+		"authorizeUser": {
+			"success": "L'accès de l'utilisateur a été autorisé avec succès.",
+			"notFound": "Utilisateur non trouvé lors de l'autorisation.",
+			"error": "Une erreur s'est produite lors de l'autorisation de l'accès de l'utilisateur."
 		}
 	},
 	"theme": {

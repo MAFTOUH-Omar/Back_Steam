@@ -14,13 +14,14 @@ router.get('/subscription', admin , async (req, res) => {
     }
 });
 
-router.get('/user-sub', admin , async (req, res) => {
+router.get('/user-sub/', admin, async (req, res) => {
     try {
-        const statistics = await Statistic.getUserAndSubscriptionCounts();
+        const { serviceId } = req.params;
+        const statistics = await Statistic.getUserAndSubscriptionCounts(serviceId);
         res.json(statistics);
     } catch (error) {
         console.error('Error in user and subscriptionCounts statistics route:', error);
-        res.status(500).json({ error: i18n.__('statisticRoute.userSubscription.error') }); 
+        res.status(500).json({ error: i18n.__('statisticRoute.userSubscription.error') });
     }
 });
 

@@ -13,6 +13,7 @@ const SuperAdminRoute = require('./routes/superAdmin.route')
 const bodyParser = require('body-parser')
 const i18n = require('./config/i18n');
 const langMiddleware = require('./middlewares/lang.middleware');
+const path = require('path');
 
 const db = require("./config/db");
 const cors = require('cors');
@@ -49,6 +50,8 @@ app.use('/channel' , ChannelRoute)
 app.use('/statistic' , StatisticRoute)
 //Statistic Routes
 app.use('/superAdmin' , SuperAdminRoute)
+//Service Picture Route
+app.use("/service_picture/", express.static(path.join(__dirname, "Picture/service_picture")));
 //Not Found Routes
 app.use("*", (req, res) => {
     res.status(404).json({

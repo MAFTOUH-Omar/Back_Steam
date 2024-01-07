@@ -14,6 +14,10 @@ const channelItemSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    active: {
+        type: Boolean,
+        default: true,
+    },
 });
 
 const channelSchema = new mongoose.Schema({

@@ -13,6 +13,13 @@ const serviceSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Admin'
     }],
+    active : {
+        type : Boolean ,
+        default : true
+    },
+    ServicePicture: {
+        type: String,
+    },
     created: {
         type: Date,
         default: Date.now,

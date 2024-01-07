@@ -28,13 +28,14 @@ const UserController = {
             res.status(500).json({ error: i18n.__('user.getAllUsers.error') });
         }
     },
-    deleteUser: async (req, res) => {
+    BanneUser: async (req, res) => {
         const userId = req.params.id;
-
         try {
-            const deletedUser = await User.findByIdAndDelete(userId);
-
-            if (deletedUser) {
+            const updatedUser = await User.findByIdAndUpdate(userId, { banned: true }, { new: true });
+        
+            if (updatedUser) {
+                await Subscription.updateMany({ user: userId }, { $set: { activationStatus: false, paymentStatus: 'failed' } });
+        
                 res.status(200).json({ message: i18n.__('user.deleteUser.success') });
             } else {
                 res.status(404).json({ error: i18n.__('user.deleteUser.notFound') });
@@ -44,6 +45,23 @@ const UserController = {
             res.status(500).json({ error: i18n.__('user.deleteUser.error') });
         }
     },
+    AuthorizeUser: async (req, res) => {
+        const userId = req.params.id;
+        try {
+            const updatedUser = await User.findByIdAndUpdate(userId, { banned: false }, { new: true });
+        
+            if (updatedUser) {
+                await Subscription.updateMany({ user: userId }, { $set: { activationStatus: false, paymentStatus: 'pending' } });
+        
+                res.status(200).json({ message: i18n.__('user.authorizeUser.success') });
+            } else {
+                res.status(404).json({ error: i18n.__('user.authorizeUser.notFound') });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: i18n.__('user.authorizeUser.error') });
+        }
+    },            
     getUserById: async (req, res) => {
         const userId = req.params.id;
 
