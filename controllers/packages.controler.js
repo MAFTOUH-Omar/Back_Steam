@@ -10,19 +10,34 @@ const Packages = {
     getAvailablePackagesForService: async (req, res) => {
         try {
             const { serviceId } = req.params;
-
+    
             if (!mongoose.Types.ObjectId.isValid(serviceId)) {
                 return res.status(400).json({ error: i18n.__('package.getAvailablePackagesForService.invalidSericeId') });
             }
-
-            const availablePackages = await Package.find({ etat: 'Available', serviceId: new mongoose.Types.ObjectId(serviceId) }).populate('serviceId', 'name');
-
-            res.status(200).json({ packages: availablePackages });
+    
+            const availablePackages = await Package.find({ etat: 'Available', serviceId: new mongoose.Types.ObjectId(serviceId) })
+                .populate({
+                    path: 'serviceId',
+                    select: 'name ServicePicture',
+                });
+    
+            const formattedPackages = availablePackages.map(package => {
+                const servicePicture = package.serviceId.ServicePicture ? package.serviceId.ServicePicture.split('/').pop() : null;
+                return {
+                    ...package.toObject(),
+                    serviceId: {
+                        ...package.serviceId.toObject(),
+                        ServicePicture: servicePicture,
+                    },
+                };
+            });
+    
+            res.status(200).json({ packages: formattedPackages });
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: i18n.__('package.getAvailablePackagesForService.error') });
         }
-    },
+    },    
     disablePackage: async (req, res) => {
         try {
             const { serviceId } = req.params;
@@ -55,7 +70,7 @@ const Packages = {
                 return res.status(400).json({ error: i18n.__('package.PackagesByServiceId.invalidSericeId') });
             }
       
-            const packages = await Package.find({ serviceId }).populate('serviceId', 'name');
+            const packages = await Package.find({ serviceId }).populate('serviceId' , 'name');
 
             res.status(200).json({ packages });
         } catch (error) {
