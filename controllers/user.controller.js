@@ -1,6 +1,7 @@
 const User = require('../models/user.model');
 const Subscription = require('../models/subscription.model');
 const i18n = require('../config/i18n'); 
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d|\W).+$/;
 
 const UserController = {
     countUser: async (req, res) => {
@@ -76,6 +77,37 @@ const UserController = {
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: i18n.__('user.getUserById.error') });
+        }
+    },
+    updateUserById: async (req, res) => {
+        const userId = req.params.id;
+        const updates = req.body;
+
+        try {
+            const existingUser = await User.findById(userId);
+
+            if (!existingUser) {
+                return res.status(404).json({ error: "User not Found" });
+            }
+
+            if (updates.password) {
+                if (updates.password.length < 8 || !updates.password.match(passwordRegex)) {
+                    return res.status(400).json({ error: "Invalid password format" });
+                }
+            }
+
+            Object.keys(updates).forEach((key) => {
+                if (existingUser.schema.paths[key]) {
+                    existingUser[key] = updates[key];
+                }
+            });
+
+            const updatedUser = await existingUser.save();
+
+            res.status(200).json({ user: updatedUser });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: "Internal Server Error" });
         }
     },
 };
