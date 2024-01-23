@@ -9,5 +9,6 @@ router.get('/:id', admin , UserController.getUserById);
 router.put('/banned/:id', admin , UserController.BanneUser);
 router.put('/authorize/:id', admin , UserController.AuthorizeUser);
 router.put('/update-user/:id', admin , UserController.updateUserById);
+router.post('/password-reset/:id', admin , UserController.passwordReset);
 
 module.exports = router;

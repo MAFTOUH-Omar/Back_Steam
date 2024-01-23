@@ -1,6 +1,9 @@
 const User = require('../models/user.model');
 const Subscription = require('../models/subscription.model');
 const i18n = require('../config/i18n'); 
+const generateRandomPassword = require('../helpers/generatePassword')
+const bcrypt = require('bcryptjs');
+const sendCredentialsEmail = require("../mail/passwordReset.mail");
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d|\W).+$/;
 
 const UserController = {
@@ -110,6 +113,34 @@ const UserController = {
             res.status(500).json({ error: "Internal Server Error" });
         }
     },
+    passwordReset: async (req, res) => {
+        const userId = req.params.id;
+    
+        try {
+            const userToUpdate = await User.findById(userId);
+    
+            if (!userToUpdate) {
+                return res.status(404).json({ error: "User not Found" });
+            }
+    
+            const newPassword = generateRandomPassword();
+    
+            userToUpdate.password = await bcrypt.hash(newPassword, 10);
+            await userToUpdate.save();
+    
+            await sendCredentialsEmail({
+                email: userToUpdate.email,
+                password: newPassword,
+                firstName: userToUpdate.FirstName,
+                lastName: userToUpdate.LastName
+            });
+    
+            res.status(200).json({ message: "Password reset email sent successfully.", passwordRest: newPassword });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: "Internal Server Error" });
+        }
+    },    
 };
 
 module.exports = UserController;

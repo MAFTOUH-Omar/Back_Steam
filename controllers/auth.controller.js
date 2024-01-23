@@ -24,8 +24,8 @@ const AuthController = {
                 return res.status(400).json({error : i18n.__('auth.signUp.checkPassword'),});
             }
       
-          const encryptedPassword = await bcrypt.hash(password, 10);
-      
+            const encryptedPassword = await bcrypt.hash(password, 10);
+        
             const user = await User.create({
                 FirstName: FirstName,
                 LastName: LastName,
