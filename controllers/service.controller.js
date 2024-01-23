@@ -148,7 +148,26 @@ const Services = {
             console.error(error);
             res.status(500).json({ message: "Internal Server Error" });
         }
-    },       
+    },
+    updateServiceDescription: async (req, res) => {
+        try {
+            const { _id } = req.params;
+            const { description } = req.body;
+
+            const service = await Service.findById(_id);
+            if (!service) {
+                return res.status(404).json({ message: "Service not found" });
+            }
+
+            service.description = description;
+            await service.save();
+
+            res.status(200).json({ message: "Service description updated successfully", service });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "Internal Server Error" });
+        }
+    },   
 };
 
 module.exports = Services;

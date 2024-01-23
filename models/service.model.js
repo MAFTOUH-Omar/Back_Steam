@@ -20,6 +20,9 @@ const serviceSchema = new mongoose.Schema({
     ServicePicture: {
         type: String,
     },
+    description: {
+        type: String,
+    },
     created: {
         type: Date,
         default: Date.now,

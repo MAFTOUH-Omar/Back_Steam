@@ -27,5 +27,6 @@ router.get('/:serviceId', admin , Service.getServiceById);
 router.get('/', admin , Service.getAllServicesWithCredit);
 router.put('/enable/:_id', admin , Service.enableService);
 router.put('/disable/:_id', admin , Service.disableService);
+router.put('/update-service-description/:_id', admin , Service.updateServiceDescription);
 
 module.exports = router;
