@@ -18,7 +18,7 @@ const Packages = {
             const availablePackages = await Package.find({ etat: 'Available', serviceId: new mongoose.Types.ObjectId(serviceId) })
                 .populate({
                     path: 'serviceId',
-                    select: 'name ServicePicture',
+                    select: 'name ServicePicture description',
                 });
     
             const formattedPackages = availablePackages.map(package => {
