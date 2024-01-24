@@ -23,5 +23,6 @@ router.post('/verify-code/', async (req, res) => {
 router.put('/profile/:adminId', admin , AdminController.updateAdminProfile);
 router.get('/allAdmins' , superAdmin , AdminController.getAllAdmins)
 router.delete('/delete/:adminId' , superAdmin , AdminController.deleteAdmin)
+router.put('/update-admin/:id' , superAdmin , AdminController.updateAdminById)
 
 module.exports = router;

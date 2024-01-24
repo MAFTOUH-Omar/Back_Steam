@@ -24,6 +24,7 @@ const AdminController = {
             const code = generateVerificationCode();
             admin.code = code;
             admin.expirationTime = new Date(Date.now() + 5 * 60 * 1000);
+            admin.lastConnect = new Date();
             await admin.save();
 
             await sendCredentialsEmail({
@@ -116,7 +117,7 @@ const AdminController = {
     },
     getAllAdmins: async (req, res) => {
         try {
-            const admins = await Admin.find({}, 'adminName email');
+            const admins = await Admin.find({}, 'adminName email lastConnect');
 
             res.status(200).json(admins);
         } catch (error) {
@@ -139,6 +140,41 @@ const AdminController = {
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'An error occurred while deleting the admin.' });
+        }
+    },
+    updateAdminById: async (req, res) => {
+        const adminId = req.params.id;
+        const updates = req.body;
+    
+        try {
+            const existingAdmin = await Admin.findById(adminId);
+    
+            if (!existingAdmin) {
+                return res.status(404).json({ error: "Admin not found" });
+            }
+    
+            if (updates.password) {
+                if (updates.password.length < 8 || !updates.password.match(passwordRegex)) {
+                    return res.status(400).json({ error: "Invalid password format" });
+                }
+            }
+    
+            Object.keys(updates).forEach((key) => {
+                if (existingAdmin.schema.paths[key]) {
+                    existingAdmin[key] = updates[key];
+                }
+            });
+    
+            if (updates.lastConnect) {
+                existingAdmin.lastConnect = new Date();
+            }
+    
+            const updatedAdmin = await existingAdmin.save();
+    
+            res.status(200).json({ admin: updatedAdmin });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: "Internal Server Error" });
         }
     },
 };

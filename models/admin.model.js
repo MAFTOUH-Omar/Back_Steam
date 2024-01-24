@@ -25,6 +25,10 @@ const adminSchema = new mongoose.Schema({
         type: Date,
         default: null,
     },
+    lastConnect: {
+        type: Date,
+        default: null,
+    },
 });
 
 const Admin = mongoose.model('AdminSteam', adminSchema);
