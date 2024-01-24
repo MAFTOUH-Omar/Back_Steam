@@ -43,7 +43,7 @@ const AdminController = {
             const admin = await Admin.findOne({ email });
     
             if (!admin) {
-                return { status: 404, message: 'Super admin introuvable.' };
+                return { status: 404, message: 'admin introuvable.' };
             }
 
             if (admin.code === parseInt(code) && admin.expirationTime > new Date()) {
@@ -61,7 +61,7 @@ const AdminController = {
             console.error(error);
             return { status: 500, message: 'Une erreur s\'est produite lors de la vérification du code.' };
         }
-    },                              
+    },                               
     updateAdminProfile: async (req, res) => {
         try {
             const { adminId } = req.params;
@@ -143,38 +143,51 @@ const AdminController = {
         }
     },
     updateAdminById: async (req, res) => {
-        const adminId = req.params.id;
-        const updates = req.body;
-    
         try {
-            const existingAdmin = await Admin.findById(adminId);
-    
-            if (!existingAdmin) {
-                return res.status(404).json({ error: "Admin not found" });
+            const adminId = req.params.id;
+            const { adminName, email, password } = req.body;
+
+            if (!adminName || !email || !password) {
+                return res.status(400).json({ error : "all champ are required" })
             }
     
-            if (updates.password) {
-                if (updates.password.length < 8 || !updates.password.match(passwordRegex)) {
-                    return res.status(400).json({ error: "Invalid password format" });
-                }
+            // Validation de l'email
+            if (!email || !email.trim()) {
+                return res.status(400).json({ error: 'Email is required' });
             }
     
-            Object.keys(updates).forEach((key) => {
-                if (existingAdmin.schema.paths[key]) {
-                    existingAdmin[key] = updates[key];
-                }
-            });
-    
-            if (updates.lastConnect) {
-                existingAdmin.lastConnect = new Date();
+            // Validation du mot de passe
+            if (password && !passwordRegex.test(password)) {
+                return res.status(400).json({ error: 'Invalid password format' });
             }
     
-            const updatedAdmin = await existingAdmin.save();
+            // Hash du mot de passe avec bcrypt si fourni
+            let hashedPassword;
+            if (password) {
+                hashedPassword = await bcrypt.hash(password, 10);
+            }
     
-            res.status(200).json({ admin: updatedAdmin });
+            // Mettre à jour les champs spécifiés
+            const updates = {};
+            if (adminName) updates.adminName = adminName;
+            if (email) updates.email = email;
+            if (password) updates.password = hashedPassword;
+    
+            // Mettre à jour le document dans la base de données
+            const updatedAdmin = await Admin.findByIdAndUpdate(
+                adminId,
+                { $set: updates },
+                { new: true }
+            );
+    
+            if (!updatedAdmin) {
+                return res.status(404).json({ error: 'Admin not found' });
+            }
+    
+            res.json(updatedAdmin);
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: "Internal Server Error" });
+            res.status(500).json({ error: 'Internal Server Error' });
         }
     },
 };

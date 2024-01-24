@@ -163,18 +163,31 @@ const SubscriptionController = {
                     return res.status(400).json({ error: i18n.__('subscription.getSubscriptionById.invalidSubscriptionId') });
                 }
         
-                const subscription = await Subscription.findById(subscriptionId).populate('packageId').exec();
+                const subscription = await Subscription.findById(subscriptionId)
+                    .populate('packageId')
+                    .exec();
         
                 if (!subscription) {
                     return res.status(404).json({ error: i18n.__('subscription.getSubscriptionById.notFound') });
                 }
         
-                res.status(200).json({ subscription });
+                const sortedLiveBouquet = subscription.liveBouquet.sort((a, b) => (b.selected ? 1 : -1));
+                const sortedSeriesBouquet = subscription.seriesBouquet.sort((a, b) => (b.selected ? 1 : -1));
+                const sortedVodBouquet = subscription.vodBouquet.sort((a, b) => (b.selected ? 1 : -1));
+        
+                res.status(200).json({
+                    subscription: {
+                        ...subscription._doc,
+                        liveBouquet: sortedLiveBouquet,
+                        seriesBouquet: sortedSeriesBouquet,
+                        vodBouquet: sortedVodBouquet,
+                    },
+                });
             } catch (error) {
                 console.error(error);
                 res.status(500).json({ error: i18n.__('subscription.getSubscriptionById.error') });
             }
-        },
+        },        
         updateSubscription: async (req, res) => {
             try {
                 const { userId, packageId, subscriptionId, deviceDetails, liveBouquet, seriesBouquet, vodBouquet } = req.body;

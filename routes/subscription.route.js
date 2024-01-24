@@ -10,7 +10,9 @@ router.get('/count-subscription' , admin , SubscriptionController.countSubscript
 router.get('/getAllSubscriptionsWithUserAndPackage' , admin , SubscriptionController.getAllSubscriptionsWithUserAndPackage);
 router.get('/subscription-user' , auth , SubscriptionController.getAllSubscriptionsByUserId);
 router.get('/:subscriptionId' , auth , SubscriptionController.getSubscriptionById);
+router.get('/subscription-admin/:subscriptionId' , admin , SubscriptionController.getSubscriptionById);
 router.put('/updateSubscription' , auth , SubscriptionController.updateSubscription);
+router.put('/updateSubscription-admin' , admin , SubscriptionController.updateSubscription);
 router.post('/disabelSubscription' , admin , SubscriptionController.disableSubscription);
 router.post('/enableSubscription' , admin , SubscriptionController.enableSubscription);
 router.delete('/deleteSubscription/:subscriptionId' , admin , SubscriptionController.deleteSubscription);
