@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require("bcryptjs");
 const Admin = require('../models/admin.model');
-const Service = require('../models/service.model');
 const i18n = require('../config/i18n'); 
 const generateVerificationCode = require('../helpers/generateVerificationCode');
 const sendCredentialsEmail = require("../mail/admin.mail");
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d|\W).+$/;
 
 const AdminController = {
     signIn: async (req, res) => {
