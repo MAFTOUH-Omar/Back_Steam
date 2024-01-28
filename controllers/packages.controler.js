@@ -110,34 +110,34 @@ const Packages = {
     updatePackagePrice: async (req, res) => {
         try {
             const { id } = req.params;
-            const { price } = req.body;
-
+            const { price, currency } = req.body;
+    
             // Vérifier si l'id est un ObjectId valide
             if (!mongoose.Types.ObjectId.isValid(id)) {
                 return res.status(400).json({ error: "Invalid package Id" });
             }
-
+    
             // Vérifier si le prix est fourni
             if (!price) {
                 return res.status(400).json({ error: "Missing Price" });
             }
-
-            // Mettre à jour le prix du package
+    
+            // Mettre à jour le prix et la devise du package
             const updatedPackage = await Package.findByIdAndUpdate(
                 id,
-                { $set: { price } },
+                { $set: { price, currency } },
                 { new: true } // Renvoyer le document mis à jour
             );
-
+    
             // Vérifier si le package existe
             if (!updatedPackage) {
                 return res.status(404).json({ status: 'fail', message: "Package not found" });
             }
-
+    
             res.status(200).json({ status: 'success', data: { package: updatedPackage } });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ status: 'fail', message: "Error lors de connection" });
+            res.status(500).json({ status: 'fail', message: "Error lors de la connexion" });
         }
     },
 }

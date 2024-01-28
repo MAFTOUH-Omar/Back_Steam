@@ -7,11 +7,16 @@ var packageSchema = new mongoose.Schema({
         required: [true, "Name not provided"],
     },
     price: {
-        type: String,
+        type: Number,
         required: [true, "Price not provided"],
     },
-    duration: {
+    currency: {
         type: String,
+        enum: ['USD', 'EUR'],
+        default: 'USD',
+    },
+    duration: {
+        type: Number,
         required: [true, "Duration not provided"],
     },
     etat: {
