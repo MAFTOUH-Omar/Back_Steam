@@ -3,7 +3,9 @@ const bcrypt = require("bcryptjs");
 const Admin = require('../models/admin.model');
 const i18n = require('../config/i18n'); 
 const generateVerificationCode = require('../helpers/generateVerificationCode');
+const generateRandomPassword = require('../helpers/generatePassword')
 const sendCredentialsEmail = require("../mail/admin.mail");
+const resetPassword = require("../mail/passwordReset.mail");
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d|\W).+$/;
 
 const AdminController = {
@@ -190,6 +192,33 @@ const AdminController = {
             res.status(500).json({ error: 'Internal Server Error' });
         }
     },
+    passwordReset: async (req, res) => {
+        const adminId = req.params.id;
+    
+        try {
+            const adminToUpdate = await Admin.findById(adminId);
+    
+            if (!adminToUpdate) {
+                return res.status(404).json({ error: "Admin not Found" });
+            }
+    
+            const newPassword = generateRandomPassword();
+    
+            adminToUpdate.password = await bcrypt.hash(newPassword, 10);
+            await adminToUpdate.save();
+    
+            await resetPassword({
+                email: adminToUpdate.email,
+                password: newPassword,
+                adminName: adminToUpdate.adminName,
+            });
+    
+            res.status(200).json({ message: "Password reset email sent successfully.", passwordRest: newPassword });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: "Internal Server Error" });
+        }
+    }, 
 };
 
 module.exports = AdminController;

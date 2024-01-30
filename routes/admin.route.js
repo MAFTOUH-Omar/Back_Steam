@@ -24,5 +24,6 @@ router.put('/profile/:adminId', admin , AdminController.updateAdminProfile);
 router.get('/allAdmins' , superAdmin , AdminController.getAllAdmins)
 router.delete('/delete/:adminId' , superAdmin , AdminController.deleteAdmin)
 router.put('/update-admin/:id' , superAdmin , AdminController.updateAdminById)
+router.post('/password-reset/:id', superAdmin , AdminController.passwordReset);
 
 module.exports = router;
