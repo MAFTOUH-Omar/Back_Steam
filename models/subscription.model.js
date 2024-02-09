@@ -59,6 +59,12 @@ const subscriptionSchema = new mongoose.Schema({
         enum: ['pending', 'success', 'failed'],
         default: 'pending',
     },
+    paymentId: {
+        type: String,
+    },
+    paymentDate: {
+        type: Date,
+    },
     activationStatus: {
         type: Boolean,
         default: false,

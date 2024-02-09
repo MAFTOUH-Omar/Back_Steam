@@ -10,6 +10,7 @@ const SubscriptionRoute = require('./routes/subscription.route')
 const ChannelRoute = require('./routes/channel.route')
 const StatisticRoute = require('./routes/statistic.route')
 const SuperAdminRoute = require('./routes/superAdmin.route')
+const PayementRoute = require('./routes/payement.route')
 const bodyParser = require('body-parser')
 const i18n = require('./config/i18n');
 const langMiddleware = require('./middlewares/lang.middleware');
@@ -50,6 +51,8 @@ app.use('/channel' , ChannelRoute)
 app.use('/statistic' , StatisticRoute)
 //Statistic Routes
 app.use('/superAdmin' , SuperAdminRoute)
+//Statistic Routes
+app.use('/payement' , PayementRoute)
 //Service Picture Route
 app.use("/service_picture/", express.static(path.join(__dirname, "Picture/service_picture")));
 //Not Found Routes
