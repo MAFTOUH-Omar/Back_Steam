@@ -1,0 +1,298 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Steam Back Packages API",
+        "version": "1.0.0",
+        "description": "Documentation de l'API des packages de Steam Back"
+    },
+    "tags": [
+        {
+            "name": "Packages",
+            "description": "Endpoints liés aux packages"
+        }
+    ],
+    "paths": {
+        "/packages-by-service/{serviceId}": {
+            "get": {
+                "summary": "Obtenir les packages par ID de service",
+                "description": "Récupère les packages associés à un ID de service spécifié.",
+                "tags": ["Packages"],
+                "parameters": [
+                    {
+                        "name": "serviceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "ObjectId"
+                        },
+                        "description": "ID du service associé aux packages"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des packages associés au service spécifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Package"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID de service invalide"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/available-packages/{serviceId}": {
+            "get": {
+                "summary": "Obtenir les packages disponibles pour un service",
+                "description": "Récupère les packages disponibles pour un service spécifié.",
+                "tags": ["Packages"],
+                "parameters": [
+                    {
+                        "name": "serviceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "ObjectId"
+                        },
+                        "description": "ID du service pour lequel récupérer les packages disponibles"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des packages disponibles pour le service spécifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Package"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID de service invalide"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/count-packages": {
+            "get": {
+                "summary": "Compter le nombre de packages",
+                "description": "Compte le nombre total de packages.",
+                "tags": ["Packages"],
+                "responses": {
+                    "200": {
+                        "description": "Nombre total de packages",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "count": {
+                                            "type": "integer",
+                                            "description": "Nombre total de packages"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/{serviceId}": {
+            "get": {
+                "summary": "Obtenir un package par ID",
+                "description": "Récupère un package spécifié par son ID.",
+                "tags": ["Packages"],
+                "parameters": [
+                    {
+                        "name": "serviceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "ObjectId"
+                        },
+                        "description": "ID du package à récupérer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Package récupéré avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Package"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID de package invalide"
+                    },
+                    "404": {
+                        "description": "Package non trouvé"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/enable/{serviceId}": {
+            "patch": {
+                "summary": "Activer un package par ID",
+                "description": "Active un package spécifié par son ID.",
+                "tags": ["Packages"],
+                "parameters": [
+                    {
+                        "name": "serviceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "ObjectId"
+                        },
+                        "description": "ID du package à activer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Package activé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Package"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID de package invalide"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/disable/{serviceId}": {
+            "patch": {
+                "summary": "Désactiver un package par ID",
+                "description": "Désactive un package spécifié par son ID.",
+                "tags": ["Packages"],
+                "parameters": [
+                    {
+                        "name": "serviceId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "ObjectId"
+                        },
+                        "description": "ID du package à désactiver"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Package désactivé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Package"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID de package invalide"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/{id}/update-price": {
+            "put": {
+                "summary": "Mettre à jour le prix d'un package par ID",
+                "description": "Met à jour le prix d'un package spécifié par son ID.",
+                "tags": ["Packages"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "ObjectId"
+                        },
+                        "description": "ID du package à mettre à jour"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "price": {
+                                        "type": "number",
+                                        "description": "Nouveau prix du package"
+                                    },
+                                    "currency": {
+                                        "type": "string",
+                                        "description": "Devise du nouveau prix"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Prix du package mis à jour avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Package"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID de package invalide ou données de requête manquantes"
+                    },
+                    "404": {
+                        "description": "Package non trouvé"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        }
+    }
+}

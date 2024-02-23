@@ -1,0 +1,142 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Theme API",
+      "description": "API for managing themes",
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "http://localhost:3000/api/theme"
+      }
+    ],
+    "paths": {
+      "/edit-theme": {
+        "put": {
+          "summary": "Update theme",
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateThemeRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Theme updated successfully",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": "success",
+                    "data": {
+                      "theme": {
+                        "_id": "60b6c854aeaf8f4b2c1701b5",
+                        "Mybg": "#FFFFFF",
+                        "MybgHover": "#CCCCCC"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "201": {
+              "description": "Theme created successfully",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": "success",
+                    "data": {
+                      "theme": {
+                        "_id": "60b6c854aeaf8f4b2c1701b5",
+                        "Mybg": "#FFFFFF",
+                        "MybgHover": "#CCCCCC"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": "fail",
+                    "message": "An error occurred while updating the theme."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/show": {
+        "get": {
+          "summary": "Get theme",
+          "responses": {
+            "200": {
+              "description": "Theme retrieved successfully",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": "success",
+                    "data": {
+                      "Mybg": "#FFFFFF",
+                      "MybgHover": "#CCCCCC"
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Theme not found",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": "fail",
+                    "message": "Theme not found."
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": "fail",
+                    "message": "An error occurred while retrieving the theme."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "UpdateThemeRequest": {
+          "type": "object",
+          "properties": {
+            "Mybg": {
+              "type": "string",
+              "description": "Background color"
+            },
+            "MybgHover": {
+              "type": "string",
+              "description": "Background hover color"
+            }
+          }
+        }
+      }
+    }
+  }  

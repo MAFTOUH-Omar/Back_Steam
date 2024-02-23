@@ -1,0 +1,51 @@
+{
+    "post": {
+      "tags": [
+        "User"
+      ],
+      "summary": "Add user",
+      "description": "",
+      "consumes": [
+        "application/json"
+      ],
+      "produces": [
+        "application/json"
+      ],
+      "parameters": [
+        {
+          "in": "body",
+          "name": "body",
+          "required": true,
+          "schema": {
+            "type": "object",
+            "required": [
+              "translateName"
+            ],
+            "properties": {
+              "id": {
+                "type": "integer",
+                "example": 11
+              },
+              "firstName": {
+                "type": "string",
+                "example": "Anton"
+              },
+              "lastName": {
+                "type": "string",
+                "example": "Chexov"
+              },
+              "age": {
+                "type": "integer",
+                "example": 25
+              }
+            }
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "successful operation"
+        }
+      }
+    }
+  }

@@ -1,0 +1,339 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Steam Back Subscription API",
+        "version": "1.0.0",
+        "description": "Documentation de l'API d'abonnement de Steam Back"
+    },
+    "tags": [
+        {
+            "name": "Subscription",
+            "description": "Endpoints liés aux abonnements"
+        }
+    ],
+    "paths": {
+        "/subscription/create-deviceType": {
+            "post": {
+                "summary": "Créer un abonnement avec un type de dispositif",
+                "tags": ["Subscription"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "userId": { "type": "string" },
+                                    "packageId": { "type": "string" },
+                                    "deviceType": { "type": "string" },
+                                    "m3uDetails": {
+                                        "type": "object",
+                                        "properties": {
+                                            "userName": { "type": "string" },
+                                            "password": { "type": "string" }
+                                        }
+                                    },
+                                    "macDetails": {
+                                        "type": "object",
+                                        "properties": {
+                                            "macAddress": { "type": "string" }
+                                        }
+                                    },
+                                    "activeCodeDetails": {
+                                        "type": "object",
+                                        "properties": {
+                                            "code": { "type": "string" }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Abonnement créé avec succès"
+                    },
+                    "400": {
+                        "description": "Requête invalide"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/subscription/create-liveBouquet": {
+            "post": {
+                "summary": "Créer un abonnement avec un bouquet en direct",
+                "tags": ["Subscription"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "userId": { "type": "string" },
+                                    "packageId": { "type": "string" },
+                                    "subscriptionId": { "type": "string" },
+                                    "liveBouquet": { "type": "array" },
+                                    "seriesBouquet": { "type": "array" },
+                                    "vodBouquet": { "type": "array" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Abonnement mis à jour avec succès"
+                    },
+                    "400": {
+                        "description": "Requête invalide"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/subscription/count-subscription": {
+            "get": {
+                "summary": "Obtenir le nombre total d'abonnements",
+                "tags": ["Subscription"],
+                "responses": {
+                    "200": {
+                        "description": "Nombre total d'abonnements récupéré avec succès"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/subscription/getAllSubscriptionsWithUserAndPackage": {
+            "get": {
+                "summary": "Obtenir tous les abonnements avec l'utilisateur et le package",
+                "tags": ["Subscription"],
+                "responses": {
+                    "200": {
+                        "description": "Abonnements récupérés avec succès"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/subscription/subscription-user": {
+            "get": {
+                "summary": "Obtenir tous les abonnements d'un utilisateur",
+                "tags": ["Subscription"],
+                "responses": {
+                    "200": {
+                        "description": "Abonnements de l'utilisateur récupérés avec succès"
+                    },
+                    "400": {
+                        "description": "Requête invalide"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/subscription/{subscriptionId}": {
+            "get": {
+                "summary": "Obtenir un abonnement par ID",
+                "tags": ["Subscription"],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "subscriptionId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Abonnement récupéré avec succès"
+                    },
+                    "400": {
+                        "description": "Requête invalide"
+                    },
+                    "404": {
+                        "description": "Abonnement non trouvé"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/subscription/updateSubscription": {
+            "put": {
+                "summary": "Mettre à jour un abonnement",
+                "tags": ["Subscription"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "userId": { "type": "string" },
+                                    "packageId": { "type": "string" },
+                                    "subscriptionId": { "type": "string" },
+                                    "deviceDetails": { "type": "object" },
+                                    "liveBouquet": { "type": "array" },
+                                    "seriesBouquet": { "type": "array" },
+                                    "vodBouquet": { "type": "array" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Abonnement mis à jour avec succès"
+                    },
+                    "400": {
+                        "description": "Requête invalide"
+                    },
+                    "404": {
+                        "description": "Abonnement non trouvé"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/subscription/updateSubscription-admin": {
+            "put": {
+                "summary": "Mettre à jour un abonnement en tant qu'administrateur",
+                "tags": ["Subscription"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "userId": { "type": "string" },
+                                    "packageId": { "type": "string" },
+                                    "subscriptionId": { "type": "string" },
+                                    "deviceDetails": { "type": "object" },
+                                    "liveBouquet": { "type": "array" },
+                                    "seriesBouquet": { "type": "array" },
+                                    "vodBouquet": { "type": "array" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Abonnement mis à jour avec succès"
+                    },
+                    "400": {
+                        "description": "Requête invalide"
+                    },
+                    "404": {
+                        "description": "Abonnement non trouvé"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/subscription/disabelSubscription": {
+            "post": {
+                "summary": "Désactiver un abonnement",
+                "tags": ["Subscription"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "subscriptionId": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Abonnement désactivé avec succès"
+                    },
+                    "400": {
+                        "description": "Requête invalide"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/subscription/enableSubscription": {
+            "post": {
+                "summary": "Activer un abonnement",
+                "tags": ["Subscription"],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "subscriptionId": { "type": "string" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Abonnement activé avec succès"
+                    },
+                    "400": {
+                        "description": "Requête invalide"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/subscription/deleteSubscription/{subscriptionId}": {
+            "delete": {
+                "summary": "Supprimer un abonnement par ID",
+                "tags": ["Subscription"],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "subscriptionId",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Abonnement supprimé avec succès"
+                    },
+                    "400": {
+                        "description": "ID d'abonnement invalide"
+                    },
+                    "404": {
+                        "description": "Abonnement introuvable"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        }
+    }
+}

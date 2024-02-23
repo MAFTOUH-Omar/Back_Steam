@@ -1,0 +1,400 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "SuperAdmin API",
+      "description": "API for managing super administrators",
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "http://localhost:3000/api/superadmin"
+      }
+    ],
+    "paths": {
+      "/signin": {
+        "post": {
+          "summary": "Sign in as a super admin",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignInRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful sign in",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "message": "Connexion réussie, Veuillez vérifier votre e-mail pour confirmer"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "message": "Adresse e-mail ou mot de passe incorrect."
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "message": "Une erreur s'est produite lors de la connexion."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/addSuperAdmin": {
+        "post": {
+          "summary": "Add a new super admin",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddSuperAdminRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Super admin added successfully",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "message": "Super admin ajouté avec succès."
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "message": "Un super admin avec cette adresse e-mail existe déjà."
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "message": "Une erreur s'est produite lors de l'ajout du super admin."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/addAdmin": {
+        "post": {
+          "summary": "Add a new admin",
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddAdminRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Admin added successfully",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "admin": {
+                      "_id": "60b6c854aeaf8f4b2c1701b5",
+                      "adminName": "John Doe",
+                      "email": "john@example.com"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "error": "Un admin avec cette adresse e-mail existe déjà."
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "error": "Une erreur s'est produite lors de la vérification du code."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/enable/{_id}": {
+        "put": {
+          "summary": "Enable a service",
+          "parameters": [
+            {
+              "name": "_id",
+              "in": "path",
+              "required": true,
+              "description": "ID of the service to enable",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Service activated successfully",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "message": "Service activated successfully",
+                    "service": {
+                      "_id": "60b6c854aeaf8f4b2c1701b5",
+                      "name": "Service 1",
+                      "active": true
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "message": "Service is already active"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "message": "Internal Server Error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/disable/{_id}": {
+        "put": {
+          "summary": "Disable a service",
+          "parameters": [
+            {
+              "name": "_id",
+              "in": "path",
+              "required": true,
+              "description": "ID of the service to disable",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Service deactivated successfully",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "message": "Service deactivated successfully",
+                    "service": {
+                      "_id": "60b6c854aeaf8f4b2c1701b5",
+                      "name": "Service 1",
+                      "active": false
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "message": "Service is already deactivated"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "message": "Internal Server Error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/verify-code": {
+        "post": {
+          "summary": "Verify verification code",
+          "parameters": [
+            {
+              "name": "email",
+              "in": "query",
+              "required": true,
+              "description": "Email address of the super admin",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "code",
+              "in": "query",
+              "required": true,
+              "description": "Verification code",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Code de validation valide",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "message": "Code de validation valide.",
+                    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Code de validation invalide ou expiré",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "message": "Code de validation invalide ou expiré."
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Super admin introuvable",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "message": "Super admin introuvable."
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "message": "Une erreur s'est produite lors de la vérification du code."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "SignInRequest": {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string",
+              "description": "Super admin's email address"
+            },
+            "password": {
+              "type": "string",
+              "description": "Super admin's password"
+            }
+          }
+        },
+        "AddSuperAdminRequest": {
+          "type": "object",
+          "properties": {
+            "SuperadminName": {
+              "type": "string",
+              "description": "Name of the new super admin"
+            },
+            "password": {
+              "type": "string",
+              "description": "Password of the new super admin"
+            },
+            "email": {
+              "type": "string",
+              "description": "Email address of the new super admin"
+            }
+          }
+        },
+        "AddAdminRequest": {
+          "type": "object",
+          "properties": {
+            "adminName": {
+              "type": "string",
+              "description": "Name of the new admin"
+            },
+            "email": {
+              "type": "string",
+              "description": "Email address of the new admin"
+            },
+            "password": {
+              "type": "string",
+              "description": "Password of the new admin"
+            }
+          }
+        }
+      }
+    }
+  }  

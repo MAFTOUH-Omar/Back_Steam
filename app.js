@@ -15,7 +15,8 @@ const bodyParser = require('body-parser')
 const langMiddleware = require('./middlewares/lang.middleware');
 const path = require('path');
 const swaggerUI = require('swagger-ui-express');
-const swaggerJsdoc = require('swagger-jsdoc');
+// const DocsRoute = require('./routes/docs.route');
+
 const db = require("./config/db");
 const cors = require('cors');
 
@@ -30,22 +31,9 @@ app.use(langMiddleware);
 app.get('/', (req, res) => {
     res.send('All Oki');
 });
-
-const options = {
-    definition: {
-        openapi: '3.0.0',
-        info: {
-            title: 'Steam Back',
-            version: '1.0.0',
-        },
-    },
-    apis: ['./routes/*.route.js'],
-};
-
-const specs = swaggerJsdoc(options);
-
-// Docs
-app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
+// Docs Routes
+const swaggerDocument = require('./Docs/main.swagger');
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 // Auth User routes
 app.use('/auth', AuthRoute);
 //Service routes

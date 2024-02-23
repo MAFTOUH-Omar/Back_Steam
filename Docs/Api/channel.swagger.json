@@ -1,0 +1,243 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Steam Back Channel API",
+        "version": "1.0.0",
+        "description": "Documentation de l'API des chaînes de Steam Back"
+    },
+    "tags": [
+        {
+            "name": "Channels",
+            "description": "Endpoints liés aux chaînes"
+        }
+    ],
+    "paths": {
+        "/channels": {
+            "get": {
+                "summary": "Obtenir toutes les chaînes",
+                "description": "Récupère toutes les chaînes.",
+                "tags": ["Channels"],
+                "responses": {
+                    "200": {
+                        "description": "Liste de toutes les chaînes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Channel"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/channels/active": {
+            "get": {
+                "summary": "Obtenir toutes les chaînes actives",
+                "description": "Récupère toutes les chaînes actives.",
+                "tags": ["Channels"],
+                "responses": {
+                    "200": {
+                        "description": "Liste de toutes les chaînes actives",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ActiveChannel"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/channels/addSelectedFieldToAllChannels": {
+            "post": {
+                "summary": "Ajouter un champ sélectionné à toutes les chaînes",
+                "description": "Ajoute un champ sélectionné à toutes les chaînes.",
+                "tags": ["Channels"],
+                "responses": {
+                    "200": {
+                        "description": "Champ sélectionné ajouté à toutes les chaînes avec succès"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/channels/updateName/{id}": {
+            "put": {
+                "summary": "Mettre à jour le nom de la chaîne par ID",
+                "description": "Met à jour le nom de la chaîne spécifiée par ID.",
+                "tags": ["Channels"],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "ID de la chaîne"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "newName": {
+                                        "type": "string",
+                                        "description": "Nouveau nom de la chaîne"
+                                    }
+                                },
+                                "required": ["newName"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Nom de la chaîne mis à jour avec succès"
+                    },
+                    "404": {
+                        "description": "Chaîne non trouvée"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/channels/enable": {
+            "put": {
+                "summary": "Activer les chaînes par ID",
+                "description": "Active les chaînes spécifiées par ID.",
+                "tags": ["Channels"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "ID de la chaîne à activer"
+                                        }
+                                    }
+                                },
+                                "required": ["ids"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Chaînes activées avec succès"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/channels/disable": {
+            "put": {
+                "summary": "Désactiver les chaînes par ID",
+                "description": "Désactive les chaînes spécifiées par ID.",
+                "tags": ["Channels"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "ID de la chaîne à désactiver"
+                                        }
+                                    }
+                                },
+                                "required": ["ids"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Chaînes désactivées avec succès"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/channels/updateOrder": {
+            "put": {
+                "summary": "Mettre à jour l'ordre des chaînes",
+                "description": "Met à jour l'ordre des chaînes.",
+                "tags": ["Channels"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "liveOrder": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "vodOrder": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "serieOrder": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "required": ["liveOrder", "vodOrder", "serieOrder"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Ordre des chaînes mis à jour avec succès"
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        }
+    }
+}

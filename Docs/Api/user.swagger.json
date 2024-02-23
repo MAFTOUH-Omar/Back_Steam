@@ -1,0 +1,417 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "User API",
+      "description": "API for managing users",
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "http://localhost:3000/api/user"
+      }
+    ],
+    "paths": {
+      "/count-user": {
+        "get": {
+          "summary": "Count users",
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "User count retrieved successfully",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "count": 10
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "error": "An error occurred while counting users."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/all-user": {
+        "get": {
+          "summary": "Get all users",
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "All users retrieved successfully",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "users": [
+                      {
+                        "_id": "60b6c854aeaf8f4b2c1701b5",
+                        "username": "user1",
+                        "email": "user1@example.com",
+                        "subscriptionCount": 2
+                      },
+                      {
+                        "_id": "60b6c854aeaf8f4b2c1701b6",
+                        "username": "user2",
+                        "email": "user2@example.com",
+                        "subscriptionCount": 0
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "error": "An error occurred while retrieving users."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/{id}": {
+        "get": {
+          "summary": "Get user by ID",
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "User retrieved successfully",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "user": {
+                      "_id": "60b6c854aeaf8f4b2c1701b5",
+                      "username": "user1",
+                      "email": "user1@example.com"
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "User not found",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "error": "User not Found"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "error": "An error occurred while retrieving the user."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/banned/{id}": {
+        "put": {
+          "summary": "Ban user",
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "User banned successfully",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "message": "User banned successfully"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "User not found",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "error": "User not Found"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "error": "An error occurred while banning the user."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/authorize/{id}": {
+        "put": {
+          "summary": "Authorize user",
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "User authorized successfully",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "message": "User authorized successfully"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "User not found",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "error": "User not Found"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "error": "An error occurred while authorizing the user."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/update-user/{id}": {
+        "put": {
+          "summary": "Update user by ID",
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateUserRequest"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "User updated successfully",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "user": {
+                      "_id": "60b6c854aeaf8f4b2c1701b5",
+                      "username": "user1",
+                      "email": "user1@example.com",
+                      "firstName": "John",
+                      "lastName": "Doe",
+                      "banned": true
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Invalid password format",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "error": "Invalid password format"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "User not found",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "error": "User not Found"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "error": "An error occurred while updating the user."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/password-reset/{id}": {
+        "post": {
+          "summary": "Reset user password",
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Password reset email sent successfully",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "message": "Password reset email sent successfully.",
+                    "passwordRest": "newpassword123"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "User not found",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "error": "User not Found"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "error": "An error occurred while resetting the password."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "UpdateUserRequest": {
+          "type": "object",
+          "properties": {
+            "username": {
+              "type": "string",
+              "description": "Username"
+            },
+            "email": {
+              "type": "string",
+              "description": "Email"
+            },
+            "firstName": {
+              "type": "string",
+              "description": "First name"
+            },
+            "lastName": {
+              "type": "string",
+              "description": "Last name"
+            },
+            "password": {
+              "type": "string",
+              "description": "New password"
+            },
+            "banned": {
+              "type": "boolean",
+              "description": "Banned status"
+            }
+          }
+        }
+      }
+    }
+  }  

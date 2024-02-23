@@ -1,0 +1,88 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Steam Back Statistic API",
+        "version": "1.0.0",
+        "description": "Documentation de l'API de statistiques de Steam Back"
+    },
+    "tags": [
+        {
+            "name": "Statistic",
+            "description": "Endpoints liés aux statistiques"
+        }
+    ],
+    "paths": {
+        "/statistic/subscription": {
+            "get": {
+                "summary": "Obtenir les statistiques d'abonnement",
+                "tags": ["Statistic"],
+                "responses": {
+                    "200": {
+                        "description": "Statistiques d'abonnement récupérées avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "pendingPercentage": { "type": "number", "description": "Pourcentage d'abonnements en attente" },
+                                        "successPercentage": { "type": "number", "description": "Pourcentage d'abonnements réussis" },
+                                        "failedPercentage": { "type": "number", "description": "Pourcentage d'abonnements échoués" },
+                                        "successSubscriberPercentage": { "type": "number", "description": "Pourcentage d'utilisateurs avec des abonnements réussis" }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        },
+        "/statistic/user-sub/": {
+            "get": {
+                "summary": "Obtenir les statistiques des utilisateurs et des abonnements",
+                "tags": ["Statistic"],
+                "responses": {
+                    "200": {
+                        "description": "Statistiques des utilisateurs et des abonnements récupérées avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "userCountsByMonth": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "month": { "type": "number", "description": "Mois" },
+                                                    "count": { "type": "number", "description": "Nombre d'utilisateurs" },
+                                                    "label": { "type": "string", "description": "Libellé du mois" }
+                                                }
+                                            }
+                                        },
+                                        "subscriptionCountsByMonth": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "month": { "type": "number", "description": "Mois" },
+                                                    "count": { "type": "number", "description": "Nombre d'abonnements" },
+                                                    "label": { "type": "string", "description": "Libellé du mois" }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur"
+                    }
+                }
+            }
+        }
+    }
+}
