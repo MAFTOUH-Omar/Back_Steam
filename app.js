@@ -12,10 +12,10 @@ const StatisticRoute = require('./routes/statistic.route')
 const SuperAdminRoute = require('./routes/superAdmin.route')
 const PayementRoute = require('./routes/payement.route')
 const bodyParser = require('body-parser')
-const i18n = require('./config/i18n');
 const langMiddleware = require('./middlewares/lang.middleware');
 const path = require('path');
-
+const swaggerUI = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
 const db = require("./config/db");
 const cors = require('cors');
 
@@ -31,6 +31,21 @@ app.get('/', (req, res) => {
     res.send('All Oki');
 });
 
+const options = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'Steam Back',
+            version: '1.0.0',
+        },
+    },
+    apis: ['./routes/*.route.js'],
+};
+
+const specs = swaggerJsdoc(options);
+
+// Docs
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
 // Auth User routes
 app.use('/auth', AuthRoute);
 //Service routes
