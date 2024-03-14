@@ -14,8 +14,6 @@ const PayementRoute = require('./routes/payement.route')
 const bodyParser = require('body-parser')
 const langMiddleware = require('./middlewares/lang.middleware');
 const path = require('path');
-const swaggerUI = require('swagger-ui-express');
-// const DocsRoute = require('./routes/docs.route');
 
 const db = require("./config/db");
 const cors = require('cors');
@@ -31,9 +29,6 @@ app.use(langMiddleware);
 app.get('/', (req, res) => {
     res.send('All Oki');
 });
-// Docs Routes
-const swaggerDocument = require('./Docs/main.swagger');
-app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 // Auth User routes
 app.use('/auth', AuthRoute);
 //Service routes

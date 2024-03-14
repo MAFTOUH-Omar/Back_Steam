@@ -1,69 +1,141 @@
-const paypal = require('@paypal/checkout-server-sdk')
-const Subscription = require('../models/subscription.model')
-const Package = require('../models/packages.model')
+const Subscription = require('../models/subscription.model');
+const paypal = require('paypal-rest-sdk');
+require('dotenv').config();
 
-// PayPal Cardinality
-const clientId = process.env.CLIENT_ID_PAYPAL ;
-const clientSecret = process.env.SECRET_KEY ;
+paypal.configure({
+    'mode': process.env.PAYPAL_MODE,
+    'client_id': process.env.PAYPAL_CLIENT_KEY,
+    'client_secret': process.env.PAYPAL_SECRET_KEY
+});
 
-// Configurez l'environnement PayPal
-const environment = new paypal.core.SandboxEnvironment(clientId, clientSecret);
-const client = new paypal.core.PayPalHttpClient(environment);
-
-const PayementController = {
-    PayPal: async (idSubscription) => {
+const Paypal = {
+    paySubscription: async function(req, res, subscriptionId) {
         try {
-            // Récupérer l'abonnement existant en utilisant l'idSubscription
-            const subscription = await Subscription.findById(idSubscription);
+            const subscription = await Subscription.findById(subscriptionId).populate('packageId');
             if (!subscription) {
-                return { success: false, message: 'Abonnement non trouvé.' };
+                return res.status(404).json({ success: false, message: 'Abonnement non trouvé.' });
             }
             
-            // Récupérer les détails du package à partir de l'abonnement
-            const package = await Package.findById(subscription.packageId);
-            if (!package) {
-                return { success: false, message: 'Package non trouvé.' };
-            }
-
-            // Créer une commande PayPal avec le montant du package
-            const request = new paypal.orders.OrdersCreateRequest();
-            request.prefer("return=representation");
-            request.requestBody({
-                intent: 'CAPTURE',
-                purchase_units: [{
-                    amount: {
-                        currency_code: package.currency,
-                        value: package.price.toFixed(2)
-                    }
+            const package = subscription.packageId;
+            const create_payment_json = {
+                "intent": "sale",
+                "payer": {
+                    "payment_method": "paypal"
+                },
+                "redirect_urls": {
+                    "return_url": process.env.PAYPAL_RETURN_URL + '?subscriptionId=' + subscriptionId ,
+                    "cancel_url": process.env.PAYPAL_CANCEL_URL + '?subscriptionId=' + subscriptionId
+                },
+                "transactions": [{
+                    "item_list": {
+                        "items": [{
+                            name: package.name,
+                            sku: subscription._id.toString(),
+                            price: package.price.toFixed(2),
+                            currency: package.currency,
+                            quantity: 1
+                        }]
+                    },
+                    "amount": {
+                        currency: package.currency,
+                        total: package.price.toFixed(2)
+                    },
+                    "description": "Achat d\'abonnement" + package.name 
                 }]
-            });
+            };
     
-            // Exécuter la requête PayPal pour créer la commande
-            const response = await client.execute(request);
-    
-            // Si le paiement est réussi, mettre à jour le modèle Subscription
-            if (response.statusCode === 201) {
-                const order = response.result;
-                const paymentId = order.id;
-                const paymentDate = new Date(order.create_time);
-    
-                // Mettre à jour les champs paymentId et paymentDate dans l'abonnement
-                subscription.paymentId = paymentId;
-                subscription.paymentDate = paymentDate;
-                subscription.paymentStatus = 'success';
-    
-                await subscription.save();
-                
-                // Retourner la réussite avec l'URL de paiement PayPal
-                return { success: true, message: 'Paiement effectué avec succès.', paypalUrl: order.links.find(link => link.rel === 'approve').href };
-            } else {
-                return { success: false, message: 'Le paiement a échoué.' };
-            }
-        } catch (error) {
-            console.error('Erreur lors de la tentative de paiement PayPal:', error);
-            return { success: false, message: 'Une erreur est survenue lors de la tentative de paiement PayPal.' };
+            // Créer une promesse pour gérer la réponse de PayPal
+            return new Promise((resolve, reject) => {
+                paypal.payment.create(create_payment_json, async (error, payment) => {
+                    if (error) {
+                        console.error(error);
+                        reject({ success: false, message: 'Une erreur est survenue lors de la création du paiement PayPal.' });
+                    } else {
+                        // Mettre à jour les champs dans le modèle de souscription
+                        let approvalUrl;
+                        for(let i = 0 ; i < payment.links.length ; i++){
+                            if(payment.links[i].rel === 'approval_url'){
+                                approvalUrl = payment.links[i].href;
+                                break;
+                            }
+                        }
+                        if (approvalUrl) {
+                            // Rediriger vers l'URL d'approbation avant d'envoyer la réponse JSON
+                            resolve({ success: true, link : approvalUrl });
+                        } else {
+                            // Si l'URL d'approbation n'est pas trouvée, rejeter la promesse
+                            reject({ success: false, message: 'Lien d\'approbation PayPal non trouvé.' });
+                        }
+                    }
+                });
+            });                       
+        } catch (err) {
+            console.error('Erreur lors de la tentative de paiement PayPal:', err);
+            return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la tentative de paiement PayPal.' });
         }
-    }
-}
+    },
+    success: async function(req, res) {
+        try {
+            // Récupérer subscriptionId à partir de la requête
+            const subscriptionId = req.query.subscriptionId;
+    
+            // Vérifier si subscriptionId est présent
+            if (!subscriptionId) {
+                return res.status(400).json({ success: false, message: 'Identifiant d\'abonnement manquant dans la requête.' });
+            }
+    
+            // Récupérer l'abonnement
+            const subscription = await Subscription.findById(subscriptionId).populate('packageId');
+            if (!subscription) {
+                return res.status(404).json({ success: false, message: 'Abonnement non trouvé.' });
+            }
+            
+            // Récupérer les informations de paiement depuis la requête
+            const payerId = req.query.PayerID;
+            const paymentId = req.query.paymentId;
+    
+            // Mettre à jour les informations de paiement dans le modèle de souscription
+            subscription.paymentMethod = 'paypal';
+            subscription.paymentStatus = 'success';
+            subscription.paymentId = paymentId;
+            subscription.paymentDate = new Date();
+            subscription.activationStatus = true;
+    
+            // Enregistrer les modifications dans la base de données
+            await subscription.save();
+    
+            // Envoyer une réponse JSON indiquant que le paiement a été effectué avec succès
+            return res.status(200).json({ success: true, message: 'Le paiement a été créé avec succès.' });
+        } catch (err) {
+            console.error('Erreur lors de la récupération de l\'abonnement:', err);
+            return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la récupération de l\'abonnement.' });
+        }
+    },    
+    cancel: async function(req, res) {
+        // Récupérer subscriptionId à partir de la requête
+        const subscriptionId = req.query.subscriptionId;
+        // Vérifier si subscriptionId est présent
+        if (!subscriptionId) {
+            return res.status(400).json({ success: false, message: 'Identifiant d\'abonnement manquant dans la requête.' });
+        }
 
-module.exports = PayementController;
+        // Récupérer l'abonnement
+        const subscription = await Subscription.findById(subscriptionId).populate('packageId');
+        if (!subscription) {
+            return res.status(404).json({ success: false, message: 'Abonnement non trouvé.' });
+        }
+
+        // Mettre à jour les informations de paiement dans le modèle de souscription
+        subscription.paymentMethod = 'paypal';
+        subscription.paymentStatus = 'failed';
+        subscription.activationStatus = false;
+
+        // Enregistrer les modifications dans la base de données
+        await subscription.save();
+
+        // Envoyer une réponse JSON indiquant que le paiement a été effectué avec succès
+        return res.json({"success" : false , "message":"Le paiement a été annulé."});
+    }
+};
+
+module.exports = Paypal;
