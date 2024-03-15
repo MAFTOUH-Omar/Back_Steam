@@ -159,7 +159,7 @@ const Crypto = {
                 metadata: {
                     subscription_id: subscriptionId
                 },
-                redirect_url: process.env.COINBASE_REDIRECT_URL + '?subscriptionId=' + subscriptionId,
+                redirect_url: process.env.COINBASE_RETURN_URL + '?subscriptionId=' + subscriptionId,
                 cancel_url: process.env.COINBASE_CANCEL_URL + '?subscriptionId=' + subscriptionId
             };
 
@@ -198,7 +198,7 @@ const Crypto = {
             await subscription.save();
 
             // Redirigez l'utilisateur vers la page de succès de l'abonnement
-            res.redirect(process.env.COINBASE_SUCCESS_URL + subscriptionId + '?pay=true');
+            res.redirect(process.env.COINBASE_REDIRECT + subscriptionId + '?pay=true');
         } catch (err) {
             console.error('Erreur lors de la récupération de l\'abonnement:', err);
             return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la récupération de l\'abonnement.' });
@@ -225,7 +225,7 @@ const Crypto = {
 
         // Enregistrez les modifications dans la base de données
         await subscription.save();
-        res.redirect(process.env.COINBASE_CANCEL_URL + subscriptionId + '?pay=false');
+        res.redirect(process.env.COINBASE_REDIRECT + subscriptionId + '?pay=false');
     }
 }
 
