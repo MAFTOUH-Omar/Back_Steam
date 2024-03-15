@@ -48,7 +48,7 @@ const Paypal = {
             return new Promise((resolve, reject) => {
                 paypal.payment.create(create_payment_json, async (error, payment) => {
                     if (error) {
-                        console.error(error);
+                        console.error(error);   
                         reject({ success: false, message: 'Une erreur est survenue lors de la création du paiement PayPal.' });
                     } else {
                         // Mettre à jour les champs dans le modèle de souscription
@@ -103,9 +103,7 @@ const Paypal = {
     
             // Enregistrer les modifications dans la base de données
             await subscription.save();
-    
-            // Envoyer une réponse JSON indiquant que le paiement a été effectué avec succès
-            return res.status(200).json({ success: true, message: 'Le paiement a été créé avec succès.' });
+            res.redirect(process.env.PAYPAL_REDIRECT + subscriptionId + '?pay=true');
         } catch (err) {
             console.error('Erreur lors de la récupération de l\'abonnement:', err);
             return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la récupération de l\'abonnement.' });
@@ -132,10 +130,54 @@ const Paypal = {
 
         // Enregistrer les modifications dans la base de données
         await subscription.save();
-
-        // Envoyer une réponse JSON indiquant que le paiement a été effectué avec succès
-        return res.json({"success" : false , "message":"Le paiement a été annulé."});
+        res.redirect(process.env.PAYPAL_REDIRECT + subscriptionId + '?pay=false');
     }
 };
+
+const Crypto = {
+    processPayment: async function(amount, subscriptionId) {
+        try {
+            // Ici, vous devrez implémenter la logique pour traiter le paiement via crypto
+            // Cela pourrait impliquer l'interaction avec une API de paiement cryptographique, une blockchain, etc.
+
+            // Pour cet exemple, nous simulons simplement un succès de paiement avec un ID de paiement généré aléatoirement
+            const paymentId = 'PAYID-' + Math.random().toString(36).substr(2, 10).toUpperCase();
+
+            // Retournez un objet de résultat de paiement avec le succès et l'ID de paiement généré
+            return { success: true, paymentId: paymentId, message: 'Paiement effectué avec succès via crypto.' };
+        } catch (error) {
+            // En cas d'erreur, retournez un objet de résultat de paiement indiquant l'échec du paiement
+            return { success: false, paymentId: null , message: 'Échec du paiement via crypto.' };
+        }
+    },
+    paySubscription: async function(req, res, subscriptionId) {
+        try {
+            // Recherche de l'abonnement
+            const subscription = await Subscription.findById(subscriptionId).populate('packageId');
+            if (!subscription) {
+                return res.status(404).json({ success: false, message: 'Abonnement non trouvé.' });
+            }
+
+            // Traitement du paiement via crypto
+            const paymentId = cryptoPaymentProvider.processPayment();
+
+            // Mise à jour des détails de paiement dans l'abonnement
+            subscription.paymentMethod = 'crypto';
+            subscription.paymentStatus = 'success';
+            subscription.paymentId = paymentId;
+            subscription.paymentDate = new Date();
+            subscription.activationStatus = true;
+
+            // Sauvegarde de l'abonnement mis à jour
+            await subscription.save();
+
+            // Réponse au client avec succès
+            return res.status(200).json({ success: true, message: 'Le paiement a été effectué avec succès.' });
+        } catch (err) {
+            console.error('Erreur lors de la tentative de paiement via crypto :', err);
+            return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la tentative de paiement via crypto.' });
+        }
+    }
+}
 
 module.exports = Paypal;
