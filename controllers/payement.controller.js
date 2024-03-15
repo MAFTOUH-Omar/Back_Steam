@@ -1,16 +1,20 @@
 const Subscription = require('../models/subscription.model');
 const paypal = require('paypal-rest-sdk');
 const Commerce = require('coinbase-commerce-node');
+const { Charge } = Commerce.resources;
 require('dotenv').config();
 
+// Paypal Config
 paypal.configure({
     'mode': process.env.PAYPAL_MODE,
     'client_id': process.env.PAYPAL_CLIENT_KEY,
     'client_secret': process.env.PAYPAL_SECRET_KEY
 });
 
-const { Charge } = Commerce.resources;
-Commerce.init(COINBASE_API_KEY);
+// Config Crypto
+// const apiKey = process.env.COINBASE_API_KEY;
+// const client = Commerce.Client.init(apiKey);
+
 const Paypal = {
     paySubscription: async function(req, res, subscriptionId) {
         try {
