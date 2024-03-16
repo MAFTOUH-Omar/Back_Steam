@@ -11,6 +11,7 @@ const ChannelRoute = require('./routes/channel.route')
 const StatisticRoute = require('./routes/statistic.route')
 const SuperAdminRoute = require('./routes/superAdmin.route')
 const PayementRoute = require('./routes/payement.route')
+const VerficationDomain = require('./routes/verfication.domain')
 const bodyParser = require('body-parser')
 const langMiddleware = require('./middlewares/lang.middleware');
 const path = require('path');
@@ -31,6 +32,8 @@ app.get('/', (req, res) => {
 });
 // Auth User routes
 app.use('/auth', AuthRoute);
+// Verfication domaine
+app.use('/verfication-domain' , VerficationDomain)
 //Service routes
 app.use('/service' , ServiceRoute)
 //Packages routes

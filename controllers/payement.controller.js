@@ -1,8 +1,7 @@
 const Subscription = require('../models/subscription.model');
 const paypal = require('paypal-rest-sdk');
-const Commerce = require('coinbase-commerce-node');
-const { Charge } = Commerce.resources;
 require('dotenv').config();
+const axios = require('axios');
 
 // Paypal Config
 paypal.configure({
@@ -10,10 +9,6 @@ paypal.configure({
     'client_id': process.env.PAYPAL_CLIENT_KEY,
     'client_secret': process.env.PAYPAL_SECRET_KEY
 });
-
-// Config Crypto
-// const apiKey = process.env.COINBASE_API_KEY;
-// const client = Commerce.Client.init(apiKey);
 
 const Paypal = {
     paySubscription: async function(req, res, subscriptionId) {
@@ -149,88 +144,51 @@ const Crypto = {
                 return res.status(404).json({ success: false, message: 'Abonnement non trouvé.' });
             }
 
-            const package = subscription.packageId;
-
-            // Créez une charge pour le paiement avec crypto-monnaie
-            const chargeData = {
-                name: 'Subscription Payment',
-                description: 'Payment for subscription',
-                local_price: {
-                    amount: package.price.toFixed(2),
-                    currency: package.currency
-                },
-                pricing_type: 'fixed_price',
-                metadata: {
-                    subscription_id: subscriptionId
-                },
-                redirect_url: process.env.COINBASE_RETURN_URL + '?subscriptionId=' + subscriptionId,
-                cancel_url: process.env.COINBASE_CANCEL_URL + '?subscriptionId=' + subscriptionId
+            // Définissez les détails du paiement
+            const paymentDetails = {
+                subscriptionId: subscription._id,
+                amount: subscription.packageId.price,
+                cryptoCurrency: 'BTC',
             };
 
-            const charge = await Charge.create(chargeData);
+            // Effectuez la requête vers l'API CryptoAPIs.io pour traiter le paiement
+            const response = await axios.post('https://api.cryptoapis.io/v1/bc/btc/mainnet/payments/create', paymentDetails, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-Key': process.env.CRYPTO_API_KEY , 
+                }
+            });
 
-            // Redirigez l'utilisateur vers l'URL de paiement Coinbase Commerce
-            res.redirect(charge.hosted_url);
-        } catch (err) {
-            console.error('Erreur lors de la tentative de paiement avec crypto-monnaie:', err);
-            return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la tentative de paiement avec crypto-monnaie.' });
-        }
-    },
-    success: async function(req, res) {
-        try {
-            // Récupérez l'identifiant de la souscription à partir de la requête
-            const subscriptionId = req.query.subscriptionId;
+            // Vérifiez si le paiement a été réussi
+            if (response.status === 200 && response.data.success) {
+                // Mettez à jour les informations de paiement dans le modèle de souscription
+                subscription.paymentMethod = 'crypto';
+                subscription.paymentStatus = 'success';
+                subscription.paymentDate = new Date();
+                subscription.activationStatus = true;
 
-            // Vérifiez si l'identifiant de la souscription est présent
-            if (!subscriptionId) {
-                return res.status(400).json({ success: false, message: 'Identifiant d\'abonnement manquant dans la requête.' });
+                // Enregistrez les modifications dans la base de données
+                await subscription.save();
+
+                // Répondez en conséquence
+                return res.status(200).json({ success: true, message: 'Paiement réussi avec crypto.' });
+            } else {
+                // Mettez à jour les informations de paiement dans le modèle de souscription
+                subscription.paymentMethod = 'crypto';
+                subscription.paymentStatus = 'failed';
+                subscription.activationStatus = false;
+
+                // Enregistrez les modifications dans la base de données
+                await subscription.save();
+
+                // Répondez en conséquence
+                return res.status(400).json({ success: false, message: 'Le paiement avec crypto a échoué.' });
             }
-
-            // Récupérez la souscription
-            const subscription = await Subscription.findById(subscriptionId).populate('packageId');
-            if (!subscription) {
-                return res.status(404).json({ success: false, message: 'Abonnement non trouvé.' });
-            }
-
-            // Mettez à jour les informations de paiement dans le modèle de souscription
-            subscription.paymentMethod = 'crypto';
-            subscription.paymentStatus = 'success';
-            subscription.paymentDate = new Date();
-            subscription.activationStatus = true;
-
-            // Enregistrez les modifications dans la base de données
-            await subscription.save();
-
-            // Redirigez l'utilisateur vers la page de succès de l'abonnement
-            res.redirect(process.env.COINBASE_REDIRECT + subscriptionId + '?pay=true');
         } catch (err) {
-            console.error('Erreur lors de la récupération de l\'abonnement:', err);
-            return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la récupération de l\'abonnement.' });
+            console.error('Erreur lors de la tentative de paiement avec crypto:', err);
+            return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la tentative de paiement avec crypto.' });
         }
-    },
-    cancel: async function(req, res) {
-        // Récupérez l'identifiant de la souscription à partir de la requête
-        const subscriptionId = req.query.subscriptionId;
-        // Vérifiez si l'identifiant de la souscription est présent
-        if (!subscriptionId) {
-            return res.status(400).json({ success: false, message: 'Identifiant d\'abonnement manquant dans la requête.' });
-        }
-
-        // Récupérez la souscription
-        const subscription = await Subscription.findById(subscriptionId).populate('packageId');
-        if (!subscription) {
-            return res.status(404).json({ success: false, message: 'Abonnement non trouvé.' });
-        }
-
-        // Mettez à jour les informations de paiement dans le modèle de souscription
-        subscription.paymentMethod = 'crypto';
-        subscription.paymentStatus = 'failed';
-        subscription.activationStatus = false;
-
-        // Enregistrez les modifications dans la base de données
-        await subscription.save();
-        res.redirect(process.env.COINBASE_REDIRECT + subscriptionId + '?pay=false');
     }
-}
+};
 
-module.exports = { Paypal, Crypto };
+module.exports = { Paypal , Crypto };

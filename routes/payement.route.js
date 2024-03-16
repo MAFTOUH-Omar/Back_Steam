@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middlewares/auth.middlewares');
-const { Paypal, Crypto } = require('../controllers/payement.controller');
+const { Paypal , Crypto } = require('../controllers/payement.controller');
 
 // PayPal
 router.post('/paypal/pay/:subscriptionId', auth ,async (req, res) => {
@@ -20,19 +20,14 @@ router.get('/paypal/success/', Paypal.success);
 router.get('/paypal/cancel', Paypal.cancel);
 
 // Crypto
-router.post('/crypto/pay/:subscriptionId' , async (req, res) => {
+router.post('/crypto/pay/:subscriptionId', async (req, res) => {
     try {
-        const result = await Crypto.paySubscription(req, res, req.params.subscriptionId);
-        if (result.hostedUrl) {
-            return res.redirect(result.hostedUrl);
-        } else {
-            return res.json(result);
-        }
-    } catch (error) {
-        return res.status(500).json({ success: false, message: 'Une erreur est survenue lors du paiement avec crypto-monnaie.' });
+        const subscriptionId = req.params.subscriptionId;
+        await Crypto.paySubscription(req, res, subscriptionId);
+    } catch (err) {
+        console.error('Erreur lors de la tentative de paiement avec crypto:', err);
+        return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la tentative de paiement avec crypto.' });
     }
 });
-router.get('/crypto/success', Crypto.success);
-router.get('/crypto/cancel', Crypto.cancel);
 
 module.exports = router;
