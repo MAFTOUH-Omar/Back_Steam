@@ -33,7 +33,7 @@ app.get('/', (req, res) => {
 // Auth User routes
 app.use('/auth', AuthRoute);
 // Verfication domaine
-app.use('/verfication-domain' , VerficationDomain)
+app.use('/' , VerficationDomain)
 //Service routes
 app.use('/service' , ServiceRoute)
 //Packages routes
