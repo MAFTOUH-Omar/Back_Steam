@@ -25,8 +25,8 @@ router.post('/crypto/pay/:subscriptionId', async (req, res) => {
         const subscriptionId = req.params.subscriptionId;
         await Crypto.paySubscription(req, res, subscriptionId);
     } catch (err) {
-        console.error('Erreur lors de la tentative de paiement avec crypto:', err);
-        return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la tentative de paiement avec crypto.' });
+        console.error('Erreur lors de la tentative de paiement avec Binance:', err);
+        return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la tentative de paiement avec Binance.' });
     }
 });
 

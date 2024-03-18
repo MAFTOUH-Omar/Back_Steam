@@ -1,13 +1,20 @@
 const Subscription = require('../models/subscription.model');
 const paypal = require('paypal-rest-sdk');
+const Binance = require('node-binance-api');
 require('dotenv').config();
-const axios = require('axios');
 
 // Paypal Config
 paypal.configure({
     'mode': process.env.PAYPAL_MODE,
     'client_id': process.env.PAYPAL_CLIENT_KEY,
     'client_secret': process.env.PAYPAL_SECRET_KEY
+});
+
+// Binance Config 
+const binance = new Binance().options({
+    APIKEY: process.env.BINANCE_API_KEY,
+    APISECRET: process.env.BINANCE_SECRET_KEY,
+    family: 4,
 });
 
 const Paypal = {
@@ -144,49 +151,38 @@ const Crypto = {
                 return res.status(404).json({ success: false, message: 'Abonnement non trouvé.' });
             }
 
-            // Définissez les détails du paiement
-            const paymentDetails = {
-                subscriptionId: subscription._id,
-                amount: subscription.packageId.price,
-                cryptoCurrency: 'BTC',
-            };
+            // Effectuez le paiement avec Binance
+            const symbol = 'BTCUSDT';
+            const quantite = 1;
+            const prix = subscription.packageId.price;
 
-            // Effectuez la requête vers l'API CryptoAPIs.io pour traiter le paiement
-            const response = await axios.post('https://api.cryptoapis.io/v1/bc/btc/mainnet/payments/create', paymentDetails, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-API-Key': process.env.CRYPTO_API_KEY , 
-                }
-            });
+            // Placez un ordre d'achat
+            const response = await binance.buy(symbol, quantite, prix);
 
-            // Vérifiez si le paiement a été réussi
-            if (response.status === 200 && response.data.success) {
-                // Mettez à jour les informations de paiement dans le modèle de souscription
+            // Vérifiez si l'ordre a été passé avec succès
+            if (response && response.status && response.status === 'FILLED') {
                 subscription.paymentMethod = 'crypto';
                 subscription.paymentStatus = 'success';
                 subscription.paymentDate = new Date();
                 subscription.activationStatus = true;
-
-                // Enregistrez les modifications dans la base de données
                 await subscription.save();
 
-                // Répondez en conséquence
-                return res.status(200).json({ success: true, message: 'Paiement réussi avec crypto.' });
+                return res.status(200).json({ success: true, message: 'Paiement réussi avec Binance.' });
             } else {
-                // Mettez à jour les informations de paiement dans le modèle de souscription
+                // Gestion des cas où la réponse de l'API Binance est incorrecte ou non reçue
+                const errorMessage = response && response.msg ? response.msg : 'Aucune réponse de l\'API Binance reçue';
+                console.error('Le paiement avec Binance a échoué:', errorMessage);
+
                 subscription.paymentMethod = 'crypto';
                 subscription.paymentStatus = 'failed';
                 subscription.activationStatus = false;
-
-                // Enregistrez les modifications dans la base de données
                 await subscription.save();
 
-                // Répondez en conséquence
-                return res.status(400).json({ success: false, message: 'Le paiement avec crypto a échoué.' });
+                return res.status(400).json({ success: false, message: 'Le paiement avec Binance a échoué.' });
             }
         } catch (err) {
-            console.error('Erreur lors de la tentative de paiement avec crypto:', err);
-            return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la tentative de paiement avec crypto.' });
+            console.error('Erreur lors de la tentative de paiement avec Binance:', err);
+            return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la tentative de paiement avec Binance.' });
         }
     }
 };
