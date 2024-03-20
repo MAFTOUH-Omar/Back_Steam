@@ -45,25 +45,42 @@ const AdminController = {
             const admin = await Admin.findOne({ email });
     
             if (!admin) {
-                return { status: 404, message: 'admin introuvable.' };
+                return { status: 404, message: 'Administrateur introuvable.' };
             }
-
-            if (admin.code === parseInt(code) && admin.expirationTime > new Date()) {
+    
+            const currentDateTime = new Date();
+            const expirationTime = admin.expirationTime;
+    
+            if (!expirationTime || expirationTime < currentDateTime) {
+                return { status: 400, message: 'Code de validation expiré.' };
+            }
+    
+            const adminCode = parseInt(code, 10);
+    
+            if (admin.code === adminCode) {
                 admin.code = null;
                 admin.expirationTime = null;
+                admin.lastConnect = currentDateTime;
                 await admin.save();
     
-                const token = jwt.sign({ _id: admin._id }, process.env.KEY)
+                const token = jwt.sign({ _id: admin._id }, process.env.KEY);
     
-                return { status: 200, message: 'Code de validation valide.', token };
+                return {
+                    status: 200,
+                    message: 'Code de validation valide.',
+                    token,
+                    email: admin.email,
+                    adminName: admin.adminName,
+                    adminId: admin._id
+                };
             } else {
-                return { status: 400, message: 'Code de validation invalide ou expiré.' };
+                return { status: 400, message: 'Code de validation invalide.' };
             }
         } catch (error) {
             console.error(error);
             return { status: 500, message: 'Une erreur s\'est produite lors de la vérification du code.' };
         }
-    },                               
+    },                                  
     updateAdminProfile: async (req, res) => {
         try {
             const { adminId } = req.params;

@@ -10,11 +10,20 @@ router.post('/verify-code/', async (req, res) => {
 
     try {
         const verificationResult = await AdminController.verifyCode(email, code);
-
-        return res.status(verificationResult.status).json({
-            message: verificationResult.message,
-            token: verificationResult.token,
-        });
+        if (verificationResult.status === 200) {
+            return res.status(verificationResult.status).json({
+                message: verificationResult.message,
+                token: verificationResult.token,
+                email: verificationResult.email,
+                adminName: verificationResult.adminName,
+                adminId: verificationResult.adminId
+            });
+        } else {
+            return res.status(verificationResult.status).json({
+                message: verificationResult.message,
+                token: verificationResult.token
+            });
+        }
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Internal Server Error' });

@@ -1,6 +1,5 @@
 const Subscription = require('../models/subscription.model');
 const paypal = require('paypal-rest-sdk');
-const Binance = require('node-binance-api');
 require('dotenv').config();
 
 // Paypal Config
@@ -11,7 +10,7 @@ paypal.configure({
 });
 
 // Binance Config 
-const binance = new Binance().options({
+const binance = require('node-binance-api')().options({
     APIKEY: process.env.BINANCE_API_KEY,
     APISECRET: process.env.BINANCE_SECRET_KEY,
     family: 4,
@@ -151,13 +150,33 @@ const Crypto = {
                 return res.status(404).json({ success: false, message: 'Abonnement non trouvé.' });
             }
 
-            // Effectuez le paiement avec Binance
+            // Obtenez les filtres de prix pour le symbole de trading
             const symbol = 'BTCUSDT';
-            const quantite = 1;
-            const prix = subscription.packageId.price;
+            const exchangeInfo = await binance.exchangeInfo(symbol);
+            
+            // Vérifiez si exchangeInfo est défini et contient les données attendues
+            if (!exchangeInfo || !exchangeInfo.symbols || exchangeInfo.symbols.length === 0) {
+                throw new Error('Données de exchangeInfo non disponibles ou invalides.');
+            }
 
-            // Placez un ordre d'achat
-            const response = await binance.buy(symbol, quantite, prix);
+            const priceFilter = exchangeInfo.symbols[0].filters.find(f => f.filterType === 'PRICE_FILTER');
+
+            // Calculez le nouveau prix acceptable en fonction du dernier prix
+            const lastPrice = await binance.prices(symbol);
+            const acceptablePrice = parseFloat(lastPrice[symbol]) * (1 + 0.01);
+
+            // Formatez le prix spécifié pour avoir trois décimales
+            const specifiedPrice = (acceptablePrice / 1000).toFixed(3);
+
+            // Vérifiez si le prix spécifié dans l'ordre respecte les filtres de prix
+            if (specifiedPrice < parseFloat(priceFilter.minPrice) || specifiedPrice > parseFloat(priceFilter.maxPrice)) {
+                // Le prix spécifié est en dehors de la plage autorisée par les filtres de prix
+                return res.status(400).json({ success: false, message: 'Le prix spécifié ne respecte pas les filtres de prix de Binance.' });
+            }
+
+            // Placez un ordre d'achat avec le nouveau prix acceptable
+            const quantity = 1;
+            const response = await binance.buy(symbol, quantity, specifiedPrice);
 
             // Vérifiez si l'ordre a été passé avec succès
             if (response && response.status && response.status === 'FILLED') {
@@ -166,23 +185,18 @@ const Crypto = {
                 subscription.paymentDate = new Date();
                 subscription.activationStatus = true;
                 await subscription.save();
-
                 return res.status(200).json({ success: true, message: 'Paiement réussi avec Binance.' });
             } else {
-                // Gestion des cas où la réponse de l'API Binance est incorrecte ou non reçue
-                const errorMessage = response && response.msg ? response.msg : 'Aucune réponse de l\'API Binance reçue';
-                console.error('Le paiement avec Binance a échoué:', errorMessage);
-
                 subscription.paymentMethod = 'crypto';
                 subscription.paymentStatus = 'failed';
                 subscription.activationStatus = false;
                 await subscription.save();
-
                 return res.status(400).json({ success: false, message: 'Le paiement avec Binance a échoué.' });
             }
         } catch (err) {
+            // Gestion des erreurs
             console.error('Erreur lors de la tentative de paiement avec Binance:', err);
-            return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la tentative de paiement avec Binance.' });
+            return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la tentative de paiement avec Binance.', err });
         }
     }
 };
