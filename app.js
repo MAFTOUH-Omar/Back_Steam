@@ -53,6 +53,18 @@ app.use('/superAdmin' , SuperAdminRoute)
 app.use('/payement' , PayementRoute)
 //Service Picture Route
 app.use("/service_picture/", express.static(path.join(__dirname, "Picture/service_picture")));
+// Serve frontend
+if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, '../Client_Steam/build')));
+  
+    app.get('*', (req, res) =>
+      res.sendFile(
+        path.resolve(__dirname, '../', 'Client_Steam', 'build', 'index.html')
+      )
+    );
+}   else {
+    app.get('/', (req, res) => res.send('Please set to production'));
+}
 //Not Found Routes
 app.use("*", (req, res) => {
     res.status(404).json({
