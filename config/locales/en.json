@@ -184,6 +184,9 @@
 			"noModification": "No modifications provided",
 			"success": "Subscription updated successfully",
 			"error": "Error updating subscription"
+		},
+		"createSubscription": {
+			"error": "subscription.createSubscription.error"
 		}
 	},
 	"authRoute": {

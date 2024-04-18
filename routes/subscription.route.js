@@ -4,8 +4,7 @@ const SubscriptionController = require('../controllers/subscription.controller')
 const auth = require('../middlewares/auth.middlewares');
 const admin = require('../middlewares/admin.middlewares');
 
-router.post('/create-deviceType' , auth , SubscriptionController.createSubscriptionDeviceType);
-router.post('/create-liveBouquet' , auth , SubscriptionController.createSubscriptionLiveBouquet);
+router.post('/create-subscription' , SubscriptionController.createSubscription)
 router.get('/count-subscription' , admin , SubscriptionController.countSubscriptions);
 router.get('/getAllSubscriptionsWithUserAndPackage' , admin , SubscriptionController.getAllSubscriptionsWithUserAndPackage);
 router.get('/subscription-user' , auth , SubscriptionController.getAllSubscriptionsByUserId);

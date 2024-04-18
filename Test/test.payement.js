@@ -1,67 +1,113 @@
-PayPal: async (subscriptionId) => {
+createSubscription: async (req, res) => {
     try {
-        // Récupérer l'abonnement existant en utilisant l'ID de l'abonnement
-        const subscription = await Subscription.findById(subscriptionId).populate('packageId');
-        if (!subscription) {
-            return { success: false, message: 'Abonnement non trouvé.' };
+        const { userId, packageId, deviceType, m3uDetails, macDetails, activeCodeDetails, subscriptionId, liveBouquet, seriesBouquet, vodBouquet } = req.body;
+        if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(packageId) || (subscriptionId && !mongoose.Types.ObjectId.isValid(subscriptionId))) {
+            return res.status(400).json({ error: i18n.__('subscription.createSubscription.invalidIds') });
         }
 
-        // Vérifier que les propriétés nécessaires de l'abonnement et du package sont définies
-        if (!subscription.packageId || !subscription.packageId.name || !subscription.packageId.price || !subscription.packageId.currency) {
-            return { success: false, message: 'Les informations de paiement de l\'abonnement sont incomplètes.' };
+        let existingSubscription;
+        let deviceDetails;
+
+        if (subscriptionId) {
+            existingSubscription = await Subscription.findOne({ _id: subscriptionId, user: userId, packageId });
+            if (!existingSubscription) {
+                return res.status(404).json({ error: i18n.__('subscription.createSubscription.notFound') });
+            }
         }
 
-        const package = subscription.packageId;
-
-        const create_payment_json = {
-            intent: 'sale',
-            payer: {
-                payment_method: 'paypal'
-            },
-            transactions: [{
-                item_list: {
-                    items: [{
-                        name: package.name,
-                        sku: subscription._id.toString(),
-                        price: package.price.toFixed(2),
-                        currency: package.currency,
-                        quantity: 1
-                    }]
-                },
-                amount: {
-                    currency: package.currency,
-                    total: package.price.toFixed(2)
-                },
-                description: 'Achat d\'abonnement'
-            }]
-        };
-
-        // Créer une promesse pour gérer la réponse de PayPal
-        return new Promise((resolve, reject) => {
-            paypal.payment.create(create_payment_json, async (error, payment) => {
-                if (error) {
-                    console.error(error);
-                    reject({ success: false, message: 'Une erreur est survenue lors de la création du paiement PayPal.' });
-                } else {
-                    // Mettre à jour les champs dans le modèle de souscription
-                    for(let i = 0 ; i < payment.links.length ; i++){
-                        if(payment.links[i].rel === 'approval_url'){
-                            res.redirect(payment.links[i].href);
-                        }
-                    }
-                    subscription.paymentMethod = 'paypal';
-                    subscription.paymentStatus = 'success';
-                    subscription.paymentId = payment.id;
-                    subscription.paymentDate = new Date();
-                    subscription.activationStatus = true;
-                    await subscription.save();
-
-                    resolve({ success: true, message: 'Le paiement a été créé avec succès.' });
+        switch (deviceType) {
+            case 'm3u':
+                if (!m3uDetails || !m3uDetails.userName || !m3uDetails.password || m3uDetails.userName.length !== 8 || m3uDetails.password.length !== 8) {
+                    return res.status(400).json({ error: i18n.__('subscription.createSubscription.invalidM3uFormat') });
                 }
-            });
+                deviceDetails = {
+                    userName: m3uDetails.userName || null,
+                    password: m3uDetails.password || null,
+                };
+                break;
+            case 'mac':
+                const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
+                if (!macDetails || !macRegex.test(macDetails.macAddress)) {
+                    return res.status(400).json({ error: i18n.__('subscription.createSubscription.invalidMacFormat') });
+                }
+                deviceDetails = {
+                    macAddress: macDetails.macAddress || null,
+                };
+                break;
+            case 'activeCode':
+                if (!activeCodeDetails || !activeCodeDetails.code || activeCodeDetails.code.length !== 12 || !/^\d+$/.test(activeCodeDetails.code)) {
+                    return res.status(400).json({ error: i18n.__('subscription.createSubscription.invalidActiveCodeFormat') });
+                }
+                deviceDetails = {
+                    code: activeCodeDetails.code || null,
+                };
+                break;
+            default:
+                return res.status(400).json({ error: i18n.__('subscription.createSubscription.invalidDeviceType') });
+        }
+
+        const package = await Package.findById(packageId);
+        if (!package) {
+            return res.status(404).json({ error: i18n.__('subscription.createSubscription.notFound') });
+        }
+
+        if (existingSubscription) {
+            switch (deviceType) {
+                case 'activeCode':
+                    existingSubscription.deviceDetails.activeCode = {
+                        code: activeCodeDetails.code || null,
+                    };
+                    break;
+                case 'mac':
+                    existingSubscription.deviceDetails.mac = {
+                        macAddress: macDetails.macAddress || null,
+                    };
+                    break;
+                case 'm3u':
+                    existingSubscription.deviceDetails.m3u = {
+                        userName: m3uDetails.userName || null,
+                        password: m3uDetails.password || null,
+                    };
+                    break;
+                default:
+                    break;
+            }
+            await existingSubscription.save();
+            return res.status(200).json({ message: i18n.__('subscription.createSubscription.updateSuccess'), subscription: existingSubscription });
+        }
+
+        let newSubscription = new Subscription({
+            user: userId,
+            packageId,
+            deviceType,
+            deviceDetails,
+            liveBouquet: [],
+            seriesBouquet: [],
+            vodBouquet: [],
+            paymentMethod: 'paypal',
         });
+
+        if (subscriptionId) {
+            newSubscription._id = subscriptionId;
+        }
+
+        if (liveBouquet || seriesBouquet || vodBouquet) {
+            newSubscription.liveBouquet = liveBouquet || [];
+            newSubscription.seriesBouquet = seriesBouquet || [];
+            newSubscription.vodBouquet = vodBouquet || [];
+        }
+
+        await newSubscription.save();
+
+        // Paiement de l'abonnement
+        const paymentResult = await paySubscription(req, res, newSubscription._id);
+        if (!paymentResult.success) {
+            return res.status(500).json({ error: i18n.__('subscription.createSubscription.paymentError'), message: paymentResult.message });
+        }
+
+        res.status(201).json({ message: i18n.__('subscription.createSubscription.createSuccess'), subscription: newSubscription });
     } catch (error) {
-        console.error('Erreur lors de la tentative de paiement PayPal:', error);
-        return { success: false, message: 'Une erreur est survenue lors de la tentative de paiement PayPal.' };
+        console.error(error);
+        res.status(500).json({ error: i18n.__('subscription.createSubscription.error') });
     }
 }

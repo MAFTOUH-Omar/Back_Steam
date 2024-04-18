@@ -2,99 +2,127 @@ const mongoose = require('mongoose');
 const Subscription = require('../models/subscription.model');
 const Package = require('../models/packages.model');
 const i18n = require('../config/i18n'); 
+const { Paypal } = require('./payement.controller')
 
 const SubscriptionController = {
-    createSubscriptionDeviceType: async (req, res) => {
+    createSubscription: async (req, res) => {
         try {
-            const { userId, packageId, deviceType, m3uDetails, macDetails, activeCodeDetails } = req.body;
+            const { userId, packageId, deviceType, m3uDetails, macDetails, activeCodeDetails, liveBouquet, seriesBouquet, vodBouquet } = req.body;
             if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(packageId)) {
-                return res.status(400).json({ error: i18n.__('subscription.createSubscriptionDeviceType.invalidUserPackageId') });
+                return res.status(400).json({ error: 'Les identifiants de l\'utilisateur ou du package ne sont pas valides.' });
             }
-            let existingSubscription = await Subscription.findOne({ user: userId, packageId, deviceType });
+    
+            let existingSubscription;
             let deviceDetails;
+    
+            // Vérifie si la requête contient un ID d'abonnement existant
+            if (req.body.subscriptionId) {
+                existingSubscription = await Subscription.findOne({ _id: req.body.subscriptionId, user: userId, packageId });
+                if (!existingSubscription) {
+                    return res.status(404).json({ error: 'Abonnement non trouvé.' });
+                }
+            }
+    
+            // Validation des détails du périphérique en fonction du type de périphérique
             switch (deviceType) {
                 case 'm3u':
-                    if (!m3uDetails || !m3uDetails.userName || !m3uDetails.password || m3uDetails.userName.length !== 8 || m3uDetails.password.length !== 8) {
-                        return res.status(400).json({ error: i18n.__('subscription.createSubscriptionDeviceType.invalidM3uFormat') });
-                    }
                     deviceDetails = {
-                        userName: m3uDetails.userName || null,
-                        password: m3uDetails.password || null,
+                        m3u: {
+                            userName: m3uDetails.userName || null,
+                            password: m3uDetails.password || null,
+                        },
                     };
                     break;
                 case 'mac':
-                    const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
-                    if (!macDetails || !macRegex.test(macDetails.macAddress)) {
-                        return res.status(400).json({ error: i18n.__('subscription.createSubscriptionDeviceType.invalidMacFormat') });
-                    }
                     deviceDetails = {
-                        macAddress: macDetails.macAddress || null,
+                        mac: {
+                            macAddress: macDetails.macAddress || null,
+                        },
                     };
                     break;
                 case 'activeCode':
-                    if (!activeCodeDetails || !activeCodeDetails.code || activeCodeDetails.code.length !== 12 || !/^\d+$/.test(activeCodeDetails.code)) {
-                        return res.status(400).json({ error: i18n.__('subscription.createSubscriptionDeviceType.invalidActiveCodeFormat') });
-                    }
                     deviceDetails = {
-                        code: activeCodeDetails.code || null,
+                        activeCode: {
+                            code: activeCodeDetails.code || null,
+                        },
                     };
                     break;
                 default:
-                    return res.status(400).json({ error: i18n.__('subscription.createSubscriptionDeviceType.invalidDeviceType') });
+                    return res.status(400).json({ error: 'Type de périphérique invalide.' });
             }
+    
             const package = await Package.findById(packageId);
             if (!package) {
-                return res.status(404).json({ error: i18n.__('subscription.createSubscriptionDeviceType.notFound') });
+                return res.status(404).json({ error: 'Package non trouvé.' });
             }
-            if (deviceType === 'activeCode') {
-                deviceDetails.activeCode = {
-                    code: activeCodeDetails.code || null,
-                };
-            } else if (deviceType === 'mac') {
-                deviceDetails.mac = {
-                    macAddress: macDetails.macAddress || null,
-                };
-            } else if (deviceType === 'm3u') {
-                deviceDetails.m3u = {
-                    userName: m3uDetails.userName || null,
-                    password: m3uDetails.password || null,
-                };
-            }
-            const newSubscription = new Subscription({
+
+            let subscriptionData = {
                 user: userId,
                 packageId,
                 deviceType,
                 deviceDetails,
-                liveBouquet: [],
-                seriesBouquet: [],
-                vodBouquet: [],
+                liveBouquet: liveBouquet || [],
+                seriesBouquet: seriesBouquet || [],
+                vodBouquet: vodBouquet || [],
                 paymentMethod: 'paypal',
-            });
+            };
+    
+            // Mise à jour de l'abonnement existant si un ID d'abonnement est fourni dans la requête
             if (existingSubscription) {
-                if (deviceType === 'activeCode') {
-                    existingSubscription.deviceDetails.activeCode = {
-                        code: activeCodeDetails.code || null,
-                    };
-                } else if (deviceType === 'mac') {
-                    existingSubscription.deviceDetails.mac = {
-                        macAddress: macDetails.macAddress || null,
-                    };
-                } else if (deviceType === 'm3u') {
-                    existingSubscription.deviceDetails.m3u = {
-                        userName: m3uDetails.userName || null,
-                        password: m3uDetails.password || null,
-                    };
+                switch (deviceType) {
+                    case 'activeCode':
+                        existingSubscription.deviceDetails.activeCode = {
+                            code: activeCodeDetails.code || null,
+                        };
+                        break;
+                    case 'mac':
+                        existingSubscription.deviceDetails.mac = {
+                            macAddress: macDetails.macAddress || null,
+                        };
+                        break;
+                    case 'm3u':
+                        existingSubscription.deviceDetails.m3u = {
+                            userName: m3uDetails.userName || null,
+                            password: m3uDetails.password || null,
+                        };
+                        break;
+                    default:
+                        break;
                 }
                 await existingSubscription.save();
-                return res.status(200).json({ message: i18n.__('subscription.createSubscriptionDeviceType.updateSuccess'), subscription: existingSubscription });
+                return res.status(200).json({ message: 'Mise à jour de l\'abonnement avec succès.', subscription: existingSubscription });
             }
+    
+            // Création d'un nouvel abonnement
+            const newSubscription = await Subscription.create(subscriptionData);
+    
+            // Attribution de l'ID de l'abonnement si fourni dans la requête
+            if (req.body.subscriptionId) {
+                newSubscription._id = req.body.subscriptionId;
+            }
+    
+            // Mise à jour des bouquets s'il y en a dans la requête
+            if (liveBouquet || seriesBouquet || vodBouquet) {
+                newSubscription.liveBouquet = liveBouquet || [];
+                newSubscription.seriesBouquet = seriesBouquet || [];
+                newSubscription.vodBouquet = vodBouquet || [];
+            }
+    
             await newSubscription.save();
-            res.status(201).json({ message: i18n.__('subscription.createSubscriptionDeviceType.createSuccess') , subscription: newSubscription });
+    
+            // Paiement de l'abonnement
+            const paymentResult = await Paypal.paySubscription(req, res, newSubscription._id);
+            if (!paymentResult.success) {
+                return res.status(500).json({ error: 'Erreur lors du paiement de l\'abonnement.', message: paymentResult.message });
+            }
+            const approvalUrl = paymentResult.link;
+    
+            res.status(201).json({ message: 'Abonnement créé avec succès.', subscription: newSubscription, link: approvalUrl });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: i18n.__('subscription.createSubscriptionDeviceType.error') });
+            res.status(500).json({ error: 'Erreur lors de la création de l\'abonnement.' });
         }
-    },
+    },        
     countSubscriptions: async (req, res) => {
         try {
             const totalSubscriptions = await Subscription.countDocuments();
@@ -102,27 +130,6 @@ const SubscriptionController = {
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: i18n.__('subscription.countSubscriptions.error') });
-        }
-    },
-    createSubscriptionLiveBouquet: async (req, res) => {
-        try {
-            const { userId, packageId, subscriptionId, liveBouquet, seriesBouquet, vodBouquet } = req.body;
-            if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(packageId) || !mongoose.Types.ObjectId.isValid(subscriptionId)) {
-                return res.status(400).json({ error: i18n.__('subscription.createSubscriptionLiveBouquet.invalidUserPackageSubscriptionId') });
-            }
-            const subscription = await Subscription.findOne({ _id: subscriptionId, user: userId, packageId });
-            if (!subscription) {
-                return res.status(404).json({ error: i18n.__('subscription.createSubscriptionLiveBouquet.notFound') });
-            }
-            subscription.liveBouquet = liveBouquet || subscription.liveBouquet;
-            subscription.seriesBouquet = seriesBouquet || subscription.seriesBouquet;
-            subscription.vodBouquet = vodBouquet || subscription.vodBouquet;
-            
-            await subscription.save();
-            res.status(200).json({ message: i18n.__('subscription.createSubscriptionLiveBouquet.updateSuccess'), subscription });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: i18n.__('subscription.createSubscriptionLiveBouquet.error') });
         }
     },
     getAllSubscriptionsByUserId: async (req, res) => {

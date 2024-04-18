@@ -1,6 +1,5 @@
 const Subscription = require('../models/subscription.model');
 const paypal = require('paypal-rest-sdk');
-const { google } = require('googleapis');
 require('dotenv').config();
 
 // Paypal Config
@@ -16,21 +15,6 @@ const binance = require('node-binance-api')().options({
     APISECRET: process.env.BINANCE_SECRET_KEY,
     family: 4,
 });
-
-// Google config 
-const googlePayConfig = {
-    environment: 'TEST',
-    merchantInfo: {
-        merchantId: 'VOTRE_ID_COMMERCANT',
-        merchantName: 'Nom de votre commerce',
-    },
-    apiVersion: 'v2', // Version de l'API Google Pay à utiliser
-    apiOptions: {
-        // Options spécifiques à l'API, par exemple, si vous avez besoin de fonctionnalités spéciales ou de configurations particulières
-    },
-    // Autres configurations nécessaires pour le client Google Pay
-};
-
 
 const Paypal = {
     paySubscription: async function(req, res, subscriptionId) {
