@@ -15,6 +15,7 @@ const bodyParser = require('body-parser')
 const langMiddleware = require('./middlewares/lang.middleware');
 const path = require('path');
 
+const stripe = require("stripe")(process.env.STRIPE_SECRET);
 const db = require("./config/db");
 const cors = require('cors');
 
@@ -50,7 +51,7 @@ app.use('/statistic' , StatisticRoute)
 //Statistic Routes
 app.use('/superAdmin' , SuperAdminRoute)
 //Statistic Routes
-app.use('/payement' , PayementRoute)
+app.use('' , PayementRoute)
 //Service Picture Route
 app.use("/service_picture/", express.static(path.join(__dirname, "Picture/service_picture")));
 //Not Found Routes
@@ -61,6 +62,37 @@ app.use("*", (req, res) => {
         timestamp: new Date(),
     });
 });
+require("dotenv").config();
+
+
+// checkout api
+app.post("/create-checkout-session",async(req,res)=>{
+    const {products} = req.body;
+
+
+    const lineItems = products.map((product)=>({
+        price_data:{
+            currency:"inr",
+            product_data:{
+                name:product.dish,
+                images:[product.imgdata]
+            },
+            unit_amount:product.price * 100,
+        },
+        quantity:product.qnty
+    }));
+
+    const session = await stripe.checkout.sessions.create({
+        payment_method_types:["card"],
+        line_items:lineItems,
+        mode:"payment",
+        success_url:"https://api-steam-v3.vercel.app/sucess",
+        cancel_url:"https://api-steam-v3.vercel.app/cancel",
+    });
+
+    res.json({id:session.id})
+
+})
 
 db.connect();
 app.listen(process.env.APP_PORT, () => {
