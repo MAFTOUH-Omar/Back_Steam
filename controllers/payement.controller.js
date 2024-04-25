@@ -9,7 +9,7 @@ paypal.configure({
     'client_secret': process.env.PAYPAL_SECRET_KEY
 });
 
-// Binance Config 
+// Binance Config
 const binance = require('node-binance-api')().options({
     APIKEY: process.env.BINANCE_API_KEY,
     APISECRET: process.env.BINANCE_SECRET_KEY,
@@ -23,7 +23,7 @@ const Paypal = {
             if (!subscription) {
                 return res.status(404).json({ success: false, message: 'Abonnement non trouvé.' });
             }
-            
+
             const package = subscription.packageId;
             const create_payment_json = {
                 "intent": "sale",
@@ -48,15 +48,15 @@ const Paypal = {
                         currency: package.currency,
                         total: package.price.toFixed(2)
                     },
-                    "description": "Achat d\'abonnement" + package.name 
+                    "description": "Achat d\'abonnement" + package.name
                 }]
             };
-    
+
             // Créer une promesse pour gérer la réponse de PayPal
             return new Promise((resolve, reject) => {
                 paypal.payment.create(create_payment_json, async (error, payment) => {
                     if (error) {
-                        console.error(error);   
+                        console.error(error);
                         reject({ success: false, message: 'Une erreur est survenue lors de la création du paiement PayPal.' });
                     } else {
                         // Mettre à jour les champs dans le modèle de souscription
@@ -76,7 +76,7 @@ const Paypal = {
                         }
                     }
                 });
-            });                       
+            });
         } catch (err) {
             console.error('Erreur lors de la tentative de paiement PayPal:', err);
             return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la tentative de paiement PayPal.' });
@@ -86,29 +86,29 @@ const Paypal = {
         try {
             // Récupérer subscriptionId à partir de la requête
             const subscriptionId = req.query.subscriptionId;
-    
+
             // Vérifier si subscriptionId est présent
             if (!subscriptionId) {
                 return res.status(400).json({ success: false, message: 'Identifiant d\'abonnement manquant dans la requête.' });
             }
-    
+
             // Récupérer l'abonnement
             const subscription = await Subscription.findById(subscriptionId).populate('packageId');
             if (!subscription) {
                 return res.status(404).json({ success: false, message: 'Abonnement non trouvé.' });
             }
-            
+
             // Récupérer les informations de paiement depuis la requête
             const payerId = req.query.PayerID;
             const paymentId = req.query.paymentId;
-    
+
             // Mettre à jour les informations de paiement dans le modèle de souscription
             subscription.paymentMethod = 'paypal';
             subscription.paymentStatus = 'success';
             subscription.paymentId = paymentId;
             subscription.paymentDate = new Date();
             subscription.activationStatus = true;
-    
+
             // Enregistrer les modifications dans la base de données
             await subscription.save();
             res.redirect(process.env.PAYPAL_REDIRECT + subscriptionId + '?pay=true');
@@ -116,7 +116,7 @@ const Paypal = {
             console.error('Erreur lors de la récupération de l\'abonnement:', err);
             return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la récupération de l\'abonnement.' });
         }
-    },    
+    },
     cancel: async function(req, res) {
         // Récupérer subscriptionId à partir de la requête
         const subscriptionId = req.query.subscriptionId;
@@ -153,7 +153,7 @@ const Crypto = {
             // Obtenez les filtres de prix pour le symbole de trading
             const symbol = 'BTCUSDT';
             const exchangeInfo = await binance.exchangeInfo(symbol);
-            
+
             // Vérifiez si exchangeInfo est défini et contient les données attendues
             if (!exchangeInfo || !exchangeInfo.symbols || exchangeInfo.symbols.length === 0) {
                 throw new Error('Données de exchangeInfo non disponibles ou invalides.');
@@ -207,4 +207,22 @@ const GooglePay = {
     }
 }
 
-module.exports = { Paypal , Crypto };
+const stripe = require('stripe')('sk_test_4eC39HqLyjWDarjtT1zdp7dc');
+
+stripe.products.create({
+  name: 'Starter Subscription',
+  description: '$12/Month subscription',
+}).then(product => {
+  stripe.prices.create({
+    unit_amount: 1200,
+    currency: 'usd',
+    recurring: {
+      interval: 'month',
+    },
+    product: product.id,
+  }).then(price => {
+    console.log('Success! Here is your starter subscription product id: ' + product.id);
+    console.log('Success! Here is your starter subscription price id: ' + price.id);
+  });
+});
+module.exports = { Paypal , Crypto , stripe };
