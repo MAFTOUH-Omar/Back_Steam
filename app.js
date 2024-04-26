@@ -86,7 +86,7 @@ app.post("/create-checkout-session",async(req,res)=>{
         payment_method_types:["card"],
         line_items:lineItems,
         mode:"payment",
-        success_url:"https://api-steam-v3.vercel.app/sucess",
+        success_url:"https://api-steam-v3.vercel.app/sucesss",
         cancel_url:"https://api-steam-v3.vercel.app/cancel",
     });
 
