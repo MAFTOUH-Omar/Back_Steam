@@ -15,7 +15,7 @@ const bodyParser = require('body-parser')
 const langMiddleware = require('./middlewares/lang.middleware');
 const path = require('path');
 
-const stripe = require("stripe")(process.env.STRIPE_SECRET);
+
 const db = require("./config/db");
 const cors = require('cors');
 
@@ -65,32 +65,38 @@ app.use("*", (req, res) => {
 require("dotenv").config();
 
 
-app.post("/api/create-checkout-session",async(req,res)=>{
-    const {products} = req.body;
+const stripe = require("stripe")("");
 
+const storeItems = new Map([
+  [1, { priceInCents: 10000, name: "Learn React Today" }],
+  [2, { priceInCents: 20000, name: "Learn CSS Today" }],
+])
 
-    const lineItems = products.map((product)=>({
-        price_data:{
-            currency:"inr",
-            product_data:{
-                name:product.dish,
-                images:[product.imgdata]
-            },
-            unit_amount:product.price * 100,
-        },
-        quantity:product.qnty
-    }));
-
+app.post("/create-checkout-session", async (req, res) => {
+  try {
     const session = await stripe.checkout.sessions.create({
-        payment_method_types:["card"],
-        line_items:lineItems,
-        mode:"payment",
-        success_url:"http://localhost:3000/sucess",
-        cancel_url:"http://localhost:3000/cancel",
-    });
-
-    res.json({id:session.id})
-
+      payment_method_types: ["card"],
+      mode: "payment",
+      line_items: req.body.items.map(item => {
+        const storeItem = storeItems.get(item.id)
+        return {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: storeItem.name,
+            },
+            unit_amount: storeItem.priceInCents,
+          },
+          quantity: item.quantity,
+        }
+      }),
+      success_url: `${process.env.CLIENT_URL}/success.html`,
+      cancel_url: `${process.env.CLIENT_URL}/cancel.html`,
+    })
+    res.json({ url: session.url })
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
 })
 
 db.connect();
