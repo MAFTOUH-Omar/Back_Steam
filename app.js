@@ -70,7 +70,7 @@ const stripe = require("stripe")("");
 const storeItems = new Map([
   [1, { priceInCents: 10000, name: "Learn React Today" }],
   [2, { priceInCents: 20000, name: "Learn CSS Today" }],
-])
+]);
 
 app.post("/create-checkout-session", async (req, res) => {
   try {
@@ -78,7 +78,7 @@ app.post("/create-checkout-session", async (req, res) => {
       payment_method_types: ["card"],
       mode: "payment",
       line_items: req.body.items.map(item => {
-        const storeItem = storeItems.get(item.id)
+        const storeItem = storeItems.get(item.id);
         return {
           price_data: {
             currency: "usd",
@@ -88,16 +88,16 @@ app.post("/create-checkout-session", async (req, res) => {
             unit_amount: storeItem.priceInCents,
           },
           quantity: item.quantity,
-        }
+        };
       }),
       success_url: `${process.env.CLIENT_URL}/success.html`,
       cancel_url: `${process.env.CLIENT_URL}/cancel.html`,
-    })
-    res.json({ url: session.url })
+    });
+    res.json({ url: session.url });
   } catch (e) {
-    res.status(500).json({ error: e.message })
+    res.status(500).json({ error: e.message });
   }
-})
+});
 
 db.connect();
 app.listen(process.env.APP_PORT, () => {
