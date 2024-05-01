@@ -55,17 +55,10 @@ app.use('' , PayementRoute)
 //Service Picture Route
 app.use("/service_picture/", express.static(path.join(__dirname, "Picture/service_picture")));
 //Not Found Routes
-app.use("*", (req, res) => {
-    res.status(404).json({
-        message: "Endpoint not found: The requested resource does not exist.",
-        endpoint: req.originalUrl,
-        timestamp: new Date(),
-    });
-});
-require("dotenv").config();
 
 
-const stripe = require("stripe")("");
+
+const stripe = require("stripe")("ffdfdsfdsdsf");
 
 const storeItems = new Map([
   [1, { priceInCents: 100000, name: "Learn React Today" }],
@@ -98,7 +91,14 @@ app.post("/stripe", async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
-
+app.use("*", (req, res) => {
+  res.status(404).json({
+      message: "Endpoint not found: The requested resource does not exist.",
+      endpoint: req.originalUrl,
+      timestamp: new Date(),
+  });
+});
+require("dotenv").config();
 db.connect();
 app.listen(process.env.APP_PORT, () => {
     console.log(`Server is running on port ${process.env.APP_PORT}`);
