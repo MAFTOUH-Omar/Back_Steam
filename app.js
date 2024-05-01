@@ -58,7 +58,7 @@ app.use("/service_picture/", express.static(path.join(__dirname, "Picture/servic
 
 
 
-const stripe = require("stripe")("ffdfdsfdsdsf");
+const stripe = require("stripe")("sk_test_4eC39HqLyjWDarjtT1zdp7dc");
 
 const storeItems = new Map([
   [1, { priceInCents: 100000, name: "Learn React Today" }],
