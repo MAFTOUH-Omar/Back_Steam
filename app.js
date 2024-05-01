@@ -25,7 +25,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json())
 app.use(langMiddleware);
-
+require("dotenv").config();
 // main
 app.get('/', (req, res) => {
     res.send('All Oki');
@@ -98,7 +98,7 @@ app.use("*", (req, res) => {
       timestamp: new Date(),
   });
 });
-require("dotenv").config();
+
 db.connect();
 app.listen(process.env.APP_PORT, () => {
     console.log(`Server is running on port ${process.env.APP_PORT}`);
