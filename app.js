@@ -66,7 +66,6 @@ const storeItems = new Map([
 ]);
 
 app.post("/stripe", async (req, res) => {
-  console.log(req);
   try {
     const v = 1;
     const session = await stripe.checkout.sessions.create({
@@ -79,6 +78,7 @@ app.post("/stripe", async (req, res) => {
             currency: "usd",
             product_data: {
               name: storeItem.name,
+              priceInCents :storeItem.priceInCents
             },
             unit_amount: storeItem.priceInCents,
           },
