@@ -60,12 +60,12 @@ app.use("/service_picture/", express.static(path.join(__dirname, "Picture/servic
 
 const stripe = require("stripe")("sk_test_4eC39HqLyjWDarjtT1zdp7dc");
 
-const storeItems = new Map([
-  [1, { priceInCents: 100000, name: "Learn React Today" }],
-  [2, { priceInCents: 20000, name: "Learn CSS Today" }],
-]);
+
 
 app.post("/stripe", async (req, res) => {
+  const storeItems = new Map([
+    ...req.body
+  ]);
 
   try {
     const v = 1;
@@ -78,7 +78,15 @@ app.post("/stripe", async (req, res) => {
           price_data: {
             currency: "usd",
             product_data: {
-              name: storeItem.name,
+              userId: storeItems.userId,
+              packageId: storeItem.id,
+              deviceType: storeItem.deviceType,
+              m3uDetails: storeItem.deviceType === 'm3u' ? deviceDetails : null,
+              macDetails: storeItem.deviceType === 'mac' ? deviceDetails : null,
+              activeCodeDetails: storeItem.deviceType === 'activeCode' ? deviceDetails : null,
+              liveBouquet: storeItem.liveBouquetData,
+              seriesBouquet: storeItem.serieBouquetData,
+              vodBouquet: storeItem.vodData
             },
             unit_amount: storeItem.priceInCents,
           },
@@ -90,7 +98,7 @@ app.post("/stripe", async (req, res) => {
       cancel_url: `${process.env.PAYPAL_CANCEL_URL + '?subscriptionId=' + v}`,
     });
     res.json({ url: session.url });
-  } catch (e) {
+  } catch (error) {
     res.status(500).json({ error: e.message });
   }
   console.log(req.body)
