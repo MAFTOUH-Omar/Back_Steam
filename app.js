@@ -78,7 +78,6 @@ app.post("/stripe", async (req, res) => {
             currency: "usd",
             product_data: {
               name: storeItem.name,
-              priceInCents :storeItem.priceInCents
             },
             unit_amount: storeItem.priceInCents,
           },
