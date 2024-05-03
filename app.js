@@ -66,6 +66,7 @@ const storeItems = new Map([
 ]);
 
 app.post("/stripe", async (req, res) => {
+  console.log(req.body);
   try {
     const v = 1;
     const session = await stripe.checkout.sessions.create({
