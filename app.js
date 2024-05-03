@@ -26,38 +26,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json())
 app.use(langMiddleware);
 require("dotenv").config();
-// main
-app.get('/', (req, res) => {
-    res.send('All Oki');
-});
-// Auth User routes
-app.use('/auth', AuthRoute);
-//Service routes
-app.use('/service' , ServiceRoute)
-//Packages routes
-app.use('/packages' , PackagesRoute)
-//User routes
-app.use('/user' , UserRoute)
-//Admin routes
-app.use('/admin' , AdminRoute)
-//Theme Routes
-app.use('/theme' , ThemeRoute)
-//Subscription Routes
-app.use('/subscription' , SubscriptionRoute)
-//Subscription Routes
-app.use('/channel' , ChannelRoute)
-//Statistic Routes
-app.use('/statistic' , StatisticRoute)
-//Statistic Routes
-app.use('/superAdmin' , SuperAdminRoute)
-//Statistic Routes
-app.use('' , PayementRoute)
-//Service Picture Route
-app.use("/service_picture/", express.static(path.join(__dirname, "Picture/service_picture")));
-//Not Found Routes
-
-
-
 const stripe = require("stripe")("sk_test_4eC39HqLyjWDarjtT1zdp7dc");
 
 app.post('/stripe', async (req, res) => {
@@ -109,6 +77,39 @@ app.get('/complete', async (req, res) => {
 app.get('/cancel', (req, res) => {
   res.redirect('/')
 })
+// main
+app.get('/', (req, res) => {
+    res.send('All Oki');
+});
+// Auth User routes
+app.use('/auth', AuthRoute);
+//Service routes
+app.use('/service' , ServiceRoute)
+//Packages routes
+app.use('/packages' , PackagesRoute)
+//User routes
+app.use('/user' , UserRoute)
+//Admin routes
+app.use('/admin' , AdminRoute)
+//Theme Routes
+app.use('/theme' , ThemeRoute)
+//Subscription Routes
+app.use('/subscription' , SubscriptionRoute)
+//Subscription Routes
+app.use('/channel' , ChannelRoute)
+//Statistic Routes
+app.use('/statistic' , StatisticRoute)
+//Statistic Routes
+app.use('/superAdmin' , SuperAdminRoute)
+//Statistic Routes
+app.use('' , PayementRoute)
+//Service Picture Route
+app.use("/service_picture/", express.static(path.join(__dirname, "Picture/service_picture")));
+//Not Found Routes
+
+
+
+
 
 db.connect();
 app.listen(process.env.APP_PORT, () => {
