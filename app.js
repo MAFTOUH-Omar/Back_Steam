@@ -60,13 +60,13 @@ app.use("/service_picture/", express.static(path.join(__dirname, "Picture/servic
 
 const stripe = require("stripe")("sk_test_4eC39HqLyjWDarjtT1zdp7dc");
 
-
+const storeItems = new Map([
+  [1, { priceInCents: 100000, name: "Learn React Today" }],
+  [2, { priceInCents: 20000, name: "Learn CSS Today" }],
+]);
 
 app.post("/stripe", async (req, res) => {
-  const storeItems = new Map([
-    ...req.body
-  ]);
-
+  console.log(req);
   try {
     const v = 1;
     const session = await stripe.checkout.sessions.create({
@@ -78,30 +78,20 @@ app.post("/stripe", async (req, res) => {
           price_data: {
             currency: "usd",
             product_data: {
-              userId: storeItems.userId,
-              packageId: storeItem.id,
-              deviceType: storeItem.deviceType,
-              m3uDetails: storeItem.deviceType === 'm3u' ? deviceDetails : null,
-              macDetails: storeItem.deviceType === 'mac' ? deviceDetails : null,
-              activeCodeDetails: storeItem.deviceType === 'activeCode' ? deviceDetails : null,
-              liveBouquet: storeItem.liveBouquetData,
-              seriesBouquet: storeItem.serieBouquetData,
-              vodBouquet: storeItem.vodData
+              name: storeItem.name,
             },
             unit_amount: storeItem.priceInCents,
           },
           quantity: item.quantity,
         };
       }),
-
       success_url: `${process.env.PAYPAL_RETURN_URL + '?subscriptionId=' + v}`,
       cancel_url: `${process.env.PAYPAL_CANCEL_URL + '?subscriptionId=' + v}`,
     });
     res.json({ url: session.url });
-  } catch (error) {
+  } catch (e) {
     res.status(500).json({ error: e.message });
   }
-  console.log(req.body)
 });
 app.use("*", (req, res) => {
   res.status(404).json({
