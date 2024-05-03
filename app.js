@@ -67,6 +67,7 @@ const storeItems = new Map([
 
 app.post("/stripe", async (req, res) => {
   try {
+    const v = 1;
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
@@ -83,8 +84,8 @@ app.post("/stripe", async (req, res) => {
           quantity: item.quantity,
         };
       }),
-      success_url: `${process.env.CLIENT_URL}/success.html`,
-      cancel_url: `${process.env.CLIENT_URL}/cancel.html`,
+      success_url: `${process.env.PAYPAL_RETURN_URL + '?subscriptionId=' + v}`,
+      cancel_url: `${process.env.PAYPAL_CANCEL_URL + '?subscriptionId=' + v}`,
     });
     res.json({ url: session.url });
   } catch (e) {
