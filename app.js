@@ -60,45 +60,55 @@ app.use("/service_picture/", express.static(path.join(__dirname, "Picture/servic
 
 const stripe = require("stripe")("sk_test_4eC39HqLyjWDarjtT1zdp7dc");
 
-const storeItems = new Map([
-  [1, { priceInCents: 100000, name: "Learn React Today" }],
-  [2, { priceInCents: 20000, name: "Learn CSS Today" }],
-]);
-
-app.post("/stripe", async (req, res) => {
-  try {
-    const v = 1;
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      mode: "payment",
-      line_items: req.body.items.map(item => {
-        const storeItem = storeItems.get(item.id);
-        return {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: storeItem.name,
-            },
-            unit_amount: storeItem.priceInCents,
+app.post('/stripe', async (req, res) => {
+  const session = await stripe.checkout.sessions.create({
+      line_items: [
+          {
+              price_data: {
+                  currency: 'usd',
+                  product_data: {
+                      name: 'Node.js and Express book'
+                  },
+                  unit_amount: 50 * 100
+              },
+              quantity: 1
           },
-          quantity: item.quantity,
-        };
-      }),
-      success_url: `${process.env.PAYPAL_RETURN_URL + '?subscriptionId=' + v}`,
-      cancel_url: `${process.env.PAYPAL_CANCEL_URL + '?subscriptionId=' + v}`,
-    });
-    res.json({ url: session.url });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-app.use("*", (req, res) => {
-  res.status(404).json({
-      message: "Endpoint not found: The requested resource does not exist.",
-      endpoint: req.originalUrl,
-      timestamp: new Date(),
-  });
-});
+          {
+              price_data: {
+                  currency: 'usd',
+                  product_data: {
+                      name: 'JavaScript T-Shirt'
+                  },
+                  unit_amount: 20 * 100
+              },
+              quantity: 2
+          }
+      ],
+      mode: 'payment',
+      shipping_address_collection: {
+          allowed_countries: ['US', 'BR']
+      },
+      success_url: `${process.env.BASE_URL}/complete?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.BASE_URL}/cancel`
+  })
+
+  res.redirect(session.url)
+})
+
+app.get('/complete', async (req, res) => {
+  const result = Promise.all([
+      stripe.checkout.sessions.retrieve(req.query.session_id, { expand: ['payment_intent.payment_method'] }),
+      stripe.checkout.sessions.listLineItems(req.query.session_id)
+  ])
+
+  console.log(JSON.stringify(await result))
+
+  res.send('Your payment was successful')
+})
+
+app.get('/cancel', (req, res) => {
+  res.redirect('/')
+})
 
 db.connect();
 app.listen(process.env.APP_PORT, () => {
