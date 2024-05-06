@@ -2,12 +2,12 @@ const mongoose = require('mongoose');
 const Subscription = require('../models/subscription.model');
 const Package = require('../models/packages.model');
 const i18n = require('../config/i18n'); 
-const { Paypal } = require('./payement.controller')
+const { Paypal , Stripe } = require('./payement.controller')
 
 const SubscriptionController = {
     createSubscription: async (req, res) => {
         try {
-            const { userId, packageId, deviceType, m3uDetails, macDetails, activeCodeDetails, liveBouquet, seriesBouquet, vodBouquet } = req.body;
+            const { userId, packageId, paymentMethod, deviceType, m3uDetails, macDetails, activeCodeDetails, liveBouquet, seriesBouquet, vodBouquet } = req.body;
             if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(packageId)) {
                 return res.status(400).json({ error: 'Les identifiants de l\'utilisateur ou du package ne sont pas valides.' });
             }
@@ -64,7 +64,7 @@ const SubscriptionController = {
                 liveBouquet: liveBouquet || [],
                 seriesBouquet: seriesBouquet || [],
                 vodBouquet: vodBouquet || [],
-                paymentMethod: 'paypal',
+                paymentMethod: paymentMethod,
             };
     
             // Mise à jour de l'abonnement existant si un ID d'abonnement est fourni dans la requête
@@ -111,11 +111,21 @@ const SubscriptionController = {
             await newSubscription.save();
     
             // Paiement de l'abonnement
-            const paymentResult = await Paypal.paySubscription(req, res, newSubscription._id);
-            if (!paymentResult.success) {
-                return res.status(500).json({ error: 'Erreur lors du paiement de l\'abonnement.', message: paymentResult.message });
+            let paymentResult;
+            let approvalUrl;
+            if (paymentMethod === 'paypal') {
+                paymentResult = await Paypal.paySubscription(req, res, newSubscription._id);
+                if (!paymentResult.success) {
+                    return res.status(500).json({ error: 'Erreur lors du paiement de l\'abonnement.', message: paymentResult.message });
+                }
+                approvalUrl = paymentResult.link;
+            } else if (paymentMethod === 'stripe') {
+                paymentResult = await Stripe.paySubscription(req, newSubscription._id);
+                if (!paymentResult.success) {
+                    return res.status(500).json({ error: 'Erreur lors du paiement de l\'abonnement.', message: paymentResult.message });
+                }
+                approvalUrl = paymentResult.link;
             }
-            const approvalUrl = paymentResult.link;
     
             res.status(201).json({ message: 'Abonnement créé avec succès.', subscription: newSubscription, link: approvalUrl });
         } catch (error) {

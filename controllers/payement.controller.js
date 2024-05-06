@@ -201,28 +201,89 @@ const Crypto = {
     }
 };
 
-const GooglePay = {
-    paySubscription : async function (req , res , subscriptionId) {
+// Configiration Stripe
+require("dotenv").config();
+const stripe = require("stripe")("sk_test_4eC39HqLyjWDarjtT1zdp7dc");
 
+const Stripe = {
+    paySubscription: async function(req, subscriptionId) {
+        try {
+            const subscription = await Subscription.findById(subscriptionId).populate('packageId');
+            if (!subscription) {
+                throw new Error('Abonnement non trouvé.');
+            }
+
+            const package = subscription.packageId;
+
+            const session = await stripe.checkout.sessions.create({
+                payment_method_types: ['card'],
+                line_items: [
+                    {
+                        price_data: {
+                            currency: package.currency,
+                            product_data: {
+                                name: package.name,
+                            },
+                            unit_amount: package.price.toFixed(2) * 100,
+                        },
+                        quantity: 1,
+                    },
+                ],
+                mode: 'payment',
+                success_url: `${process.env.STRIPE_RETURN_URL}?subscriptionId=${subscriptionId}`,
+                cancel_url: `${process.env.STRIPE_CANCEL_URL}?subscriptionId=${subscriptionId}`,
+            });
+
+            return { success: true, link: session.url };
+        } catch (error) {
+            console.error('Erreur lors de la tentative de paiement Stripe:', error);
+            throw new Error('Une erreur est survenue lors de la tentative de paiement Stripe.');
+        }
+    },
+    success: async function(req, res) {
+        try {
+            const subscriptionId = req.query.subscriptionId;
+            if (!subscriptionId) {
+                return res.status(400).json({ success: false, message: 'Identifiant d\'abonnement manquant dans la requête.' });
+            }
+    
+            const subscription = await Subscription.findById(subscriptionId).populate('packageId');
+            if (!subscription) {
+                return res.status(404).json({ success: false, message: 'Abonnement non trouvé.' });
+            }
+    
+            subscription.paymentMethod = 'stripe';
+            subscription.paymentStatus = 'success';
+            subscription.paymentDate = new Date();
+            subscription.activationStatus = true;
+    
+            await subscription.save();
+    
+            res.redirect(process.env.STRIPE_REDIRECT + subscriptionId + '?pay=true');
+        } catch (error) {
+            console.error('Erreur lors de la récupération de l\'abonnement:', error);
+            return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la récupération de l\'abonnement.' });
+        }
+    },
+    cancel: async function(req, res) {
+        const subscriptionId = req.query.subscriptionId;
+        if (!subscriptionId) {
+            return res.status(400).json({ success: false, message: 'Identifiant d\'abonnement manquant dans la requête.' });
+        }
+    
+        const subscription = await Subscription.findById(subscriptionId).populate('packageId');
+        if (!subscription) {
+            return res.status(404).json({ success: false, message: 'Abonnement non trouvé.' });
+        }
+    
+        subscription.paymentMethod = 'stripe';
+        subscription.paymentStatus = 'failed';
+        subscription.activationStatus = false;
+    
+        await subscription.save();
+    
+        res.redirect(process.env.STRIPE_REDIRECT + subscriptionId + '?pay=false');
     }
 }
 
-const stripe = require('stripe')('sk_test_4eC39HqLyjWDarjtT1zdp7dc');
-
-stripe.products.create({
-  name: 'Starter Subscription',
-  description: '$12/Month subscription',
-}).then(product => {
-  stripe.prices.create({
-    unit_amount: 1200,
-    currency: 'usd',
-    recurring: {
-      interval: 'month',
-    },
-    product: product.id,
-  }).then(price => {
-    console.log('Success! Here is your starter subscription product id: ' + product.id);
-    console.log('Success! Here is your starter subscription price id: ' + price.id);
-  });
-});
-module.exports = { Paypal , Crypto , stripe };
+module.exports = { Paypal , Crypto , Stripe };

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middlewares/auth.middlewares');
-const { Paypal, Crypto } = require('../controllers/payement.controller');
+const { Paypal, Crypto , Stripe } = require('../controllers/payement.controller');
 
 // PayPal
 router.post('/paypal/pay/:subscriptionId', auth, async (req, res) => {
@@ -30,4 +30,18 @@ router.post('/crypto/pay/:subscriptionId', async (req, res) => {
         return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la tentative de paiement avec Binance.' });
     }
 });
+
+// Stripe
+router.post('/stripe/pay/:subscriptionId', auth, async (req, res) => {
+    try {
+        const result = await Stripe.paySubscription(req, req.params.subscriptionId);
+        res.json(result);
+    } catch (error) {
+        console.error('Erreur lors du paiement Stripe :', error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
+router.get('/stripe/success', Stripe.success);
+router.get('/stripe/cancel', Stripe.cancel);
+
 module.exports = router;
