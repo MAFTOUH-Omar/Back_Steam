@@ -142,7 +142,7 @@ const Paypal = {
     }
 };
 
-const Crypto = {
+const UnpaidPaypal = {
     paySubscription: async function(req, res, subscriptionId) {
         try {
             const subscription = await Subscription.findById(subscriptionId).populate('packageId');
@@ -150,56 +150,108 @@ const Crypto = {
                 return res.status(404).json({ success: false, message: 'Abonnement non trouvé.' });
             }
 
-            // Obtenez les filtres de prix pour le symbole de trading
-            const symbol = 'BTCUSDT';
-            const exchangeInfo = await binance.exchangeInfo(symbol);
+            const package = subscription.packageId;
+            const create_payment_json = {
+                "intent": "sale",
+                "payer": {
+                    "payment_method": "paypal"
+                },
+                "redirect_urls": {
+                    "return_url": process.env.UNPAID_PAYPAL_RETURN_URL + '?subscriptionId=' + subscriptionId ,
+                    "cancel_url": process.env.UNPAID_PAYPAL_CANCEL_URL + '?subscriptionId=' + subscriptionId
+                },
+                "transactions": [{
+                    "item_list": {
+                        "items": [{
+                            name: package.name,
+                            sku: subscription._id.toString(),
+                            price: package.price.toFixed(2),
+                            currency: package.currency,
+                            quantity: 1
+                        }]
+                    },
+                    "amount": {
+                        currency: package.currency,
+                        total: package.price.toFixed(2)
+                    },
+                    "description": "Achat d\'abonnement" + package.name
+                }]
+            };
 
-            // Vérifiez si exchangeInfo est défini et contient les données attendues
-            if (!exchangeInfo || !exchangeInfo.symbols || exchangeInfo.symbols.length === 0) {
-                throw new Error('Données de exchangeInfo non disponibles ou invalides.');
-            }
-
-            const priceFilter = exchangeInfo.symbols[0].filters.find(f => f.filterType === 'PRICE_FILTER');
-
-            // Calculez le nouveau prix acceptable en fonction du dernier prix
-            const lastPrice = await binance.prices(symbol);
-            const acceptablePrice = parseFloat(lastPrice[symbol]) * (1 + 0.01);
-
-            // Formatez le prix spécifié pour avoir trois décimales
-            const specifiedPrice = (acceptablePrice / 1000).toFixed(3);
-
-            // Vérifiez si le prix spécifié dans l'ordre respecte les filtres de prix
-            if (specifiedPrice < parseFloat(priceFilter.minPrice) || specifiedPrice > parseFloat(priceFilter.maxPrice)) {
-                // Le prix spécifié est en dehors de la plage autorisée par les filtres de prix
-                return res.status(400).json({ success: false, message: 'Le prix spécifié ne respecte pas les filtres de prix de Binance.' });
-            }
-
-            // Placez un ordre d'achat avec le nouveau prix acceptable
-            const quantity = 1;
-            const response = await binance.buy(symbol, quantity, specifiedPrice);
-
-            // Vérifiez si l'ordre a été passé avec succès
-            if (response && response.status && response.status === 'FILLED') {
-                subscription.paymentMethod = 'crypto';
-                subscription.paymentStatus = 'success';
-                subscription.paymentDate = new Date();
-                subscription.activationStatus = true;
-                await subscription.save();
-                return res.status(200).json({ success: true, message: 'Paiement réussi avec Binance.' });
-            } else {
-                subscription.paymentMethod = 'crypto';
-                subscription.paymentStatus = 'failed';
-                subscription.activationStatus = false;
-                await subscription.save();
-                return res.status(400).json({ success: false, message: 'Le paiement avec Binance a échoué.' });
-            }
+            return new Promise((resolve, reject) => {
+                paypal.payment.create(create_payment_json, async (error, payment) => {
+                    if (error) {
+                        console.error(error);
+                        reject({ success: false, message: 'Une erreur est survenue lors de la création du paiement PayPal.' });
+                    } else {
+                        let approvalUrl;
+                        for(let i = 0 ; i < payment.links.length ; i++){
+                            if(payment.links[i].rel === 'approval_url'){
+                                approvalUrl = payment.links[i].href;
+                                break;
+                            }
+                        }
+                        if (approvalUrl) {
+                            resolve({ success: true, link : approvalUrl });
+                        } else {
+                            reject({ success: false, message: 'Lien d\'approbation PayPal non trouvé.' });
+                        }
+                    }
+                });
+            });
         } catch (err) {
-            // Gestion des erreurs
-            console.error('Erreur lors de la tentative de paiement avec Binance:', err);
-            return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la tentative de paiement avec Binance.', err });
+            console.error('Erreur lors de la tentative de paiement PayPal:', err);
+            return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la tentative de paiement PayPal.' });
         }
+    },
+    success: async function(req, res) {
+        try {
+            const subscriptionId = req.query.subscriptionId;
+
+            if (!subscriptionId) {
+                return res.status(400).json({ success: false, message: 'Identifiant d\'abonnement manquant dans la requête.' });
+            }
+
+            const subscription = await Subscription.findById(subscriptionId).populate('packageId');
+            if (!subscription) {
+                return res.status(404).json({ success: false, message: 'Abonnement non trouvé.' });
+            }
+
+            const payerId = req.query.PayerID;
+            const paymentId = req.query.paymentId;
+
+            subscription.paymentMethod = 'paypal';
+            subscription.paymentStatus = 'success';
+            subscription.paymentId = paymentId;
+            subscription.paymentDate = new Date();
+            subscription.activationStatus = true;
+
+            await subscription.save();
+            res.redirect(process.env.UNPAID_PAYPAL_REDIRECT);
+        } catch (err) {
+            console.error('Erreur lors de la récupération de l\'abonnement:', err);
+            return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la récupération de l\'abonnement.' });
+        }
+    },
+    cancel: async function(req, res) {
+        const subscriptionId = req.query.subscriptionId;
+        if (!subscriptionId) {
+            return res.status(400).json({ success: false, message: 'Identifiant d\'abonnement manquant dans la requête.' });
+        }
+
+        const subscription = await Subscription.findById(subscriptionId).populate('packageId');
+        if (!subscription) {
+            return res.status(404).json({ success: false, message: 'Abonnement non trouvé.' });
+        }
+
+        subscription.paymentMethod = 'paypal';
+        subscription.paymentStatus = 'failed';
+        subscription.activationStatus = false;
+
+        await subscription.save();
+        res.redirect(process.env.UNPAID_PAYPAL_REDIRECT);
     }
-};
+}
 
 // Configiration Stripe
 require("dotenv").config();
@@ -286,4 +338,85 @@ const Stripe = {
     }
 }
 
-module.exports = { Paypal , Crypto , Stripe };
+const UnpaidStripe = {
+    paySubscription: async function(req, subscriptionId) {
+        try {
+            const subscription = await Subscription.findById(subscriptionId).populate('packageId');
+            if (!subscription) {
+                throw new Error('Abonnement non trouvé.');
+            }
+
+            const package = subscription.packageId;
+
+            const session = await stripe.checkout.sessions.create({
+                payment_method_types: ['card'],
+                line_items: [
+                    {
+                        price_data: {
+                            currency: package.currency,
+                            product_data: {
+                                name: package.name,
+                            },
+                            unit_amount: package.price.toFixed(2) * 100,
+                        },
+                        quantity: 1,
+                    },
+                ],
+                mode: 'payment',
+                success_url: `${process.env.UNPAID_STRIPE_RETURN_URL}?subscriptionId=${subscriptionId}`,
+                cancel_url: `${process.env.UNPAID_STRIPE_CANCEL_URL}?subscriptionId=${subscriptionId}`,
+            });
+
+            return { success: true, link: session.url };
+        } catch (error) {
+            console.error('Erreur lors de la tentative de paiement Stripe:', error);
+            throw new Error('Une erreur est survenue lors de la tentative de paiement Stripe.');
+        }
+    },
+    success: async function(req, res) {
+        try {
+            const subscriptionId = req.query.subscriptionId;
+            if (!subscriptionId) {
+                return res.status(400).json({ success: false, message: 'Identifiant d\'abonnement manquant dans la requête.' });
+            }
+    
+            const subscription = await Subscription.findById(subscriptionId).populate('packageId');
+            if (!subscription) {
+                return res.status(404).json({ success: false, message: 'Abonnement non trouvé.' });
+            }
+    
+            subscription.paymentMethod = 'stripe';
+            subscription.paymentStatus = 'success';
+            subscription.paymentDate = new Date();
+            subscription.activationStatus = true;
+    
+            await subscription.save();
+    
+            res.redirect(process.env.UNPAID_STRIPE_REDIRECT);
+        } catch (error) {
+            console.error('Erreur lors de la récupération de l\'abonnement:', error);
+            return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la récupération de l\'abonnement.' });
+        }
+    },
+    cancel: async function(req, res) {
+        const subscriptionId = req.query.subscriptionId;
+        if (!subscriptionId) {
+            return res.status(400).json({ success: false, message: 'Identifiant d\'abonnement manquant dans la requête.' });
+        }
+    
+        const subscription = await Subscription.findById(subscriptionId).populate('packageId');
+        if (!subscription) {
+            return res.status(404).json({ success: false, message: 'Abonnement non trouvé.' });
+        }
+    
+        subscription.paymentMethod = 'stripe';
+        subscription.paymentStatus = 'failed';
+        subscription.activationStatus = false;
+    
+        await subscription.save();
+    
+        res.redirect(process.env.UNPAID_STRIPE_REDIRECT);
+    }
+}
+
+module.exports = { Paypal , Stripe , UnpaidPaypal , UnpaidStripe};
