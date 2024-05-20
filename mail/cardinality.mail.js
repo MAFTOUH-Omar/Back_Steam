@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
 
 const sendCredentialsEmail = ( user ) => {
     return new Promise((resolve, reject) => {
-    const confirmationLink = `https://api-steam-v3.vercel.app/auth/confirm-signup/${user.token}`;
+    const confirmationLink = `http://localhost:3030/auth/confirm-signup/${user.token}`;
     const mailOptions = {
         from: process.env.EMAIL,
         to: user.email,

@@ -41,6 +41,10 @@ var userSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    reseller: {
+        type: Boolean,
+        default: false,
+    },
     created: {
         type: Date,
         default: Date.now

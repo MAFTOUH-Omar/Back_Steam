@@ -83,6 +83,7 @@ const AuthController = {
                     email: user.email,
                     FirstName: user.FirstName,
                     LastName: user.LastName,
+                    reseller: user.reseller
                 },
                 message: i18n.__('auth.signIn.success'),
                 accessToken: token,
