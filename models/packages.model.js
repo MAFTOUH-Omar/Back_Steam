@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 const Service = require('./service.model');
 
 var packageSchema = new mongoose.Schema({
+    package_id: {
+        type: Number,
+        required: true
+    },
     name: {
         type: String,
         required: [true, "Name not provided"],

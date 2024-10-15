@@ -12,6 +12,7 @@ const StatisticRoute = require('./routes/statistic.route')
 const SuperAdminRoute = require('./routes/superAdmin.route')
 const PayementRoute = require('./routes/payement.route')
 const ResellerRoute = require('./routes/reseller.route')
+const MegaRoute = require('./routes/mega.route')
 const bodyParser = require('body-parser')
 const langMiddleware = require('./middlewares/lang.middleware');
 const path = require('path');
@@ -52,6 +53,8 @@ app.use('/superAdmin' , SuperAdminRoute)
 app.use('/payement' , PayementRoute)
 //Reseller Routes
 app.use('/reseller' , ResellerRoute)
+//Mega Routes
+app.use('/mega' , MegaRoute)
 //Service Picture Route
 app.use("/service_picture/", express.static(path.join(__dirname, "Picture/service_picture")));
 //Not Found Routes
