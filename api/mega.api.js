@@ -37,6 +37,55 @@ const MegaController = {
             };
         }
     } , 
+    Service: async (req, res) => {
+        try {
+            const token = await MegaController.Authentification();
+            if (token.error) {
+                return res.status(401).json({ error: token.details });
+            }
+    
+            const response = await axios.get(process.env.MEGA_API_URL_DATA + '/me', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+    
+            const credit = response.data.credit || 0;
+    
+            // Chercher le service "Mega"
+            let megaService = await Service.findOne({ name: { $regex: /^mega$/i } });
+            
+            if (!megaService) {
+                // Si le service n'existe pas, créer un nouveau service
+                megaService = new Service({
+                    name: 'Mega',
+                    credit: credit,
+                    active: true,
+                    description: 'Service for Mega API',
+                    ServicePicture: '',
+                });
+                
+                // Sauvegarder le nouveau service
+                await megaService.save();
+                return res.status(200).json({
+                    message: 'New Mega service created successfully',
+                    results: megaService
+                });
+            } else {
+                // Si le service existe, mettre à jour le crédit
+                megaService.credit = credit;
+                
+                await megaService.save();
+                return res.status(200).json({
+                    message: 'Mega service credit updated successfully',
+                    results: megaService
+                });
+            }
+        } catch (error) {
+            return res.status(500).json({
+                error: 'Error processing service',
+                details: error.message
+            });
+        }
+    },
     Packages: async (req, res) => {
         try {
             const token = await MegaController.Authentification();
