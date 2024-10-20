@@ -1,36 +1,64 @@
 const Service = require('../models/service.model');
 const Package = require('../models/packages.model');
 const i18n = require('../config/i18n'); 
+require('dotenv').config();
 
-const Services = {
+const Services = {             
     All: async (req, res) => {
         try {
-            const services = await Service.find();
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || parseInt(process.env.PAGINATION_LIMIT) || 5;
+            const searchQuery = req.query.search ? req.query.search.trim() : '';
+
+            const query = searchQuery
+            ? {
+                $or: [
+                    { name: { $regex: new RegExp(searchQuery, 'i') } },
+                ]
+            }
+            : {};
+    
+            const options = {
+                page: page,
+                limit: limit,
+                lean: true,
+                sort: { created: -1 }
+            };
+    
+            const servicesPaginated = await Service.paginate(query, options);
     
             const servicesWithPackages = await Promise.all(
-                services.map(async (service) => {
+                servicesPaginated.docs.map(async (service) => {
                     const allPackages = await Package.find({ serviceId: service._id });
-                    const availablePackages = allPackages.filter(package => package.etat === 'Available');
-    
+                    const availablePackages = allPackages.filter(pkg => pkg.etat === 'Available');
+        
                     const servicePicture = service.ServicePicture ? service.ServicePicture.split('/').pop() : null;
-    
+        
                     return {
                         _id: service._id,
                         name: service.name,
                         active: service.active,
+                        credit: service.credit,
                         packageCount: availablePackages.length,
                         packages: availablePackages,
                         ServicePicture: servicePicture,
+                        created: service.created,
                     };
                 })
             );
     
-            res.status(200).json(servicesWithPackages);
+            res.status(200).json({
+                totalDocs: servicesPaginated.totalDocs,
+                totalPages: servicesPaginated.totalPages,
+                currentPage: servicesPaginated.page,
+                servicesPerPage: servicesPaginated.limit,
+                services: servicesWithPackages,
+            });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: i18n.__('service.All.error') });
+            res.status(500).json({ error: 'Error fetching services with pagination' });
         }
-    },             
+    },    
     countServices: async (req, res) => {
         try {
             const serviceCount = await Service.countDocuments();
@@ -103,14 +131,14 @@ const Services = {
             return res.status(500).json({ message: "Internal Server Error" });
         }
     },
-    getEnableSerive : async (req , res) => {
+    getEnableSerive: async (req, res) => {
         try {
             const services = await Service.find({ active: true });
     
             const servicesWithPackages = await Promise.all(
                 services.map(async (service) => {
                     const allPackages = await Package.find({ serviceId: service._id });
-                    const availablePackages = allPackages.filter(package => package.etat === 'Available');
+                    const availablePackages = allPackages.filter(pkg => pkg.etat === 'Available');
                     const servicePicture = service.ServicePicture ? service.ServicePicture.split('/').pop() : null;
     
                     return {
@@ -124,12 +152,14 @@ const Services = {
                 })
             );
     
-            res.status(200).json(servicesWithPackages);
+            const filteredServices = servicesWithPackages.filter(service => service.packageCount > 0);
+    
+            res.status(200).json(filteredServices);
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: i18n.__('service.All.error') });
         }
-    },
+    },    
     addServiceImage: async (req, res) => {
         try {
             const { _id } = req.params;

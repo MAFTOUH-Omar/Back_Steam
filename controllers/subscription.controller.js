@@ -253,16 +253,39 @@ const SubscriptionController = {
             res.status(500).json({ error: i18n.__('subscription.updateSubscription.error') });
         }
     },
-    getAllSubscriptionsWithUserAndPackage : async (req, res) => {
+    getAllSubscriptionsWithUserAndPackage: async (req, res) => {
         try {
-            const subscriptions = await Subscription.find({})
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 5;
+            const searchQuery = req.query.search ? req.query.search.trim() : '';
+            const filter = {};
+    
+            if (searchQuery) {
+                const regex = new RegExp(searchQuery, 'i');
+                filter.$or = [
+                    { 'user.FirstName': regex },
+                    { 'user.LastName': regex },
+                    { 'packageId.name': regex }
+                ];
+            }
+
+            const totalSubscriptions = await Subscription.countDocuments(filter).exec();
+            const subscriptions = await Subscription.find(filter)
                 .populate('user')
                 .populate('packageId')
+                .sort({ createdAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit)
                 .exec();
     
-            res.status(200).json({ subscriptions });
+            res.status(200).json({
+                subscriptions,
+                totalDocs: totalSubscriptions,
+                totalPages: Math.ceil(totalSubscriptions / limit),
+                currentPage: page,
+                limit: limit,
+            });
         } catch (error) {
-            console.error(error);
             res.status(500).json({ error: 'Error lors de connexion' });
         }
     },

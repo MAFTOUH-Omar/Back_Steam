@@ -178,22 +178,20 @@ const MegaController = {
                 return res.status(401).json({ error: token.details });
             }
     
-            const response = await axios.get(process.env.MEGA_API_URL_DATA + '/bouquets?filters[is_children]&per_page=' + process.env.MEGA_PER_PAGE, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-    
-            const bouquets = response.data.data;
-            const updateResults = [];
-    
             // Chercher le service "mega"
             const megaService = await Service.findOne({ name: { $regex: /^mega$/i } });
             if (!megaService) {
                 return res.status(404).json({ error: 'Service mega not found' });
             }
     
-            // Supprimer les bouquets avec `bouquet_id: 0` associés au service "mega" dans chaque tableau
+            // Récupérer tous les packages associés au service "mega"
+            const packages = await Package.find({ serviceId: megaService._id });
+    
+            const updateResults = [];
+    
+            // Supprimer les bouquets avec `bouquet_id: 0` associés au service "mega"
             const deleteResult = await Channel.updateMany(
-                { serviceId: megaService._id },
+                { packageId: { $in: packages.map(pkg => pkg._id) } }, // Mettre à jour pour les packages spécifiques
                 {
                     $pull: {
                         LiveBouquet: { bouquet_id: 0 },
@@ -202,67 +200,77 @@ const MegaController = {
                     }
                 }
             );
-    
             updateResults.push({
                 deletedCount: deleteResult.modifiedCount,
-                message: `Bouquets with bouquet_id: 0 deleted for service mega.`
+                message: `Bouquets with bouquet_id: 0 deleted for packages associated with service mega.`
             });
     
-            // Parcourir chaque bouquet
-            for (const bouquet of bouquets) {
-                const { id, bouquet_name, type } = bouquet;
+            // Parcourir chaque package du service "mega"
+            for (const pkg of packages) {
+                const packageId = pkg._id;
     
-                // Rechercher le bouquet existant dans la collection Channel
-                let channel = await Channel.findOne({ serviceId: megaService._id });
+                // Appeler l'API Mega pour obtenir les bouquets du package
+                const response = await axios.get(`${process.env.MEGA_API_URL_DATA}/packages/${pkg.package_id}/bouquets?per_page=${process.env.MEGA_PER_PAGE}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
     
-                // Si le channel n'existe pas, en créer un nouveau
-                if (!channel) {
-                    channel = new Channel({
-                        serviceId: megaService._id,
-                        LiveBouquet: [],
-                        Vod: [],
-                        SerieBouquet: []
-                    });
-                }
+                const bouquets = response.data.data;
     
-                // Mise à jour du bouquet si il existe déjà
-                const result = await Channel.updateOne(
-                    {
-                        serviceId: megaService._id,
-                        $or: [
-                            { 'LiveBouquet.bouquet_id': id },
-                            { 'SerieBouquet.bouquet_id': id },
-                            { 'Vod.bouquet_id': id }
-                        ]
-                    },
-                    {
-                        $set: {
-                            [`${type === 'live' ? 'LiveBouquet' : type === 'serie' ? 'SerieBouquet' : 'Vod'}.$[elem].name`]: bouquet_name
-                        }
-                    },
-                    { arrayFilters: [{ 'elem.bouquet_id': id }] }
-                );
+                // Parcourir chaque bouquet
+                for (const bouquet of bouquets) {
+                    const { id, bouquet_name, type } = bouquet;
     
-                // Si aucun document n'a été mis à jour, cela signifie qu'il faut créer un nouveau bouquet
-                if (result.matchedCount === 0) {
-                    const newBouquet = {
-                        bouquet_id: id,
-                        name: bouquet_name,
-                        selected: false,
-                        active: true
-                    };
+                    // Rechercher le bouquet existant dans la collection Channel
+                    let channel = await Channel.findOne({ packageId: packageId });
     
-                    // Ajouter le nouveau bouquet au bon tableau
-                    if (type === 'live') {
-                        channel.LiveBouquet.push(newBouquet);
-                    } else if (type === 'serie') {
-                        channel.SerieBouquet.push(newBouquet);
-                    } else if (type === 'movie') {
-                        channel.Vod.push(newBouquet);
+                    // Si le channel n'existe pas, en créer un nouveau
+                    if (!channel) {
+                        channel = new Channel({
+                            packageId: packageId,
+                            LiveBouquet: [],
+                            Vod: [],
+                            SerieBouquet: []
+                        });
                     }
     
-                    // Enregistrer le nouveau channel ou le channel modifié
-                    await channel.save();
+                    // Mise à jour du bouquet si il existe déjà
+                    const result = await Channel.updateOne(
+                        {
+                            packageId: packageId,
+                            $or: [
+                                { 'LiveBouquet.bouquet_id': id },
+                                { 'SerieBouquet.bouquet_id': id },
+                                { 'Vod.bouquet_id': id }
+                            ]
+                        },
+                        {
+                            $set: {
+                                [`${type === 'live' ? 'LiveBouquet' : type === 'serie' ? 'SerieBouquet' : 'Vod'}.$[elem].name`]: bouquet_name
+                            }
+                        },
+                        { arrayFilters: [{ 'elem.bouquet_id': id }] }
+                    );
+    
+                    // Si aucun document n'a été mis à jour, créer un nouveau bouquet
+                    if (result.matchedCount === 0) {
+                        const newBouquet = {
+                            bouquet_id: id,
+                            name: bouquet_name,
+                            selected: false,
+                            active: true
+                        };
+    
+                        // Ajouter le nouveau bouquet au bon tableau
+                        if (type === 'live') {
+                            channel.LiveBouquet.push(newBouquet);
+                        } else if (type === 'serie') {
+                            channel.SerieBouquet.push(newBouquet);
+                        } else if (type === 'movie') {
+                            channel.Vod.push(newBouquet);
+                        }
+    
+                        await channel.save();
+                    }
                 }
             }
     
@@ -275,7 +283,7 @@ const MegaController = {
             return res.status(500).json({ error: 'Error updating bouquets', details: error.message });
         }
     }
-       
+    
 };
 
 module.exports = MegaController;

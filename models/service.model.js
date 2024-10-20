@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const mongoosePaginate = require('mongoose-paginate-v2');
 
 const serviceSchema = new mongoose.Schema({
     name: {
@@ -29,5 +30,6 @@ const serviceSchema = new mongoose.Schema({
     },
 });
 
+serviceSchema.plugin(mongoosePaginate);
 const Service = mongoose.model('Service', serviceSchema);
 module.exports = Service;

@@ -18,20 +18,48 @@ const UserController = {
     },
     getAllUsers: async (req, res) => {
         try {
-            const users = await User.find({}, '-password');
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || parseInt(process.env.PAGINATION_LIMIT) || 5;
+            const searchQuery = req.query.search ? req.query.search.trim() : '';
+    
+            const query = searchQuery
+                ? {
+                    $or: [
+                        { FirstName: { $regex: new RegExp(searchQuery, 'i') } },
+                        { LastName: { $regex: new RegExp(searchQuery, 'i') } },
+                    ]
+                }
+                : {};
+    
+            const options = {
+                page: page,
+                limit: limit,
+                select: '-password',
+                lean: true,
+                sort: { created: -1 }
+            };
+    
+            const result = await User.paginate(query, options);
+    
             const usersWithSubscriptionCount = await Promise.all(
-                users.map(async (user) => {
+                result.docs.map(async (user) => {
                     const subscriptionCount = await Subscription.countDocuments({ user: user._id });
-                    return { ...user._doc, subscriptionCount };
+                    return { ...user, subscriptionCount };
                 })
             );
-
-            res.status(200).json({ users: usersWithSubscriptionCount });
+    
+            res.status(200).json({
+                users: usersWithSubscriptionCount,
+                totalDocs: result.totalDocs,
+                totalPages: result.totalPages,
+                currentPage: result.page,
+                limit: result.limit,
+            });
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: i18n.__('user.getAllUsers.error') });
         }
-    },
+    },       
     BanneUser: async (req, res) => {
         const userId = req.params.id;
         try {

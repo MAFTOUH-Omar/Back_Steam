@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const User = require('./user.model');
 const Package = require('./packages.model');
+const mongoosePaginate = require('mongoose-paginate-v2');
 
 const channelItemSchema = new mongoose.Schema({
     _id: {
@@ -75,6 +76,6 @@ const subscriptionSchema = new mongoose.Schema({
     },
 });
 
+subscriptionSchema.plugin(mongoosePaginate);
 const Subscription = mongoose.model('Subscription', subscriptionSchema);
-
 module.exports = Subscription;

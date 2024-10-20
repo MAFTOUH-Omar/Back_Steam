@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Service = require('./service.model');
+const Package = require('./packages.model');
 
 const channelItemSchema = new mongoose.Schema({
     _id: {
@@ -29,9 +29,9 @@ const channelSchema = new mongoose.Schema({
     LiveBouquet: [channelItemSchema],
     Vod: [channelItemSchema],
     SerieBouquet: [channelItemSchema],
-    serviceId: {
+    packageId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Service"
+        ref: "Package"
     },
 });
 
