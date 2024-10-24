@@ -3,7 +3,18 @@ const Channel = require('../models/channel.model');
 const ChannelController = {
     getAllChannels : async (req, res) => {
         try {
-            const channels = await Channel.find();
+            const { packageId } = req.params;
+    
+            if (!packageId) {
+                return res.status(400).json({ error: "packageId is required" });
+            }
+    
+            const channels = await Channel.find({ packageId });
+    
+            if (!channels.length) {
+                return res.status(404).json({ error: "No channels found for the given packageId" });
+            }
+            
             res.json(channels);
         } catch (error) {
             console.error('Error fetching channels:', error);

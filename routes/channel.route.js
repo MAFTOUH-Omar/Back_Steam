@@ -5,7 +5,7 @@ const ChannelController = require('../controllers/channel.controller');
 const admin = require('../middlewares/admin.middlewares')
 
 router.use(bodyParser.json());
-router.get('/' , admin , ChannelController.getAllChannels)
+router.get('/:packageId' , admin , ChannelController.getAllChannels)
 router.get('/activeChannels/:packageId' , ChannelController.getAllActiveChannels)
 router.post('/addSelectedFieldToAllChannels', ChannelController.addSelectedFieldToAllChannels);
 router.put('/updateName/:id', admin ,ChannelController.updateChannelNameById);

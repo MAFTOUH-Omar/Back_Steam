@@ -1,5 +1,6 @@
 const axios = require('axios');
 const qs = require('qs');
+const crypto = require('crypto');
 const Package = require('../models/packages.model');
 const Service = require('../models/service.model');
 const Channel = require('../models/channel.model');
@@ -93,43 +94,66 @@ const MegaController = {
                 return res.status(401).json({ error: token.details });
             }
     
-            const response = await axios.get(process.env.MEGA_API_URL_DATA + '/packages?per_page=' + process.env.MEGA_PER_PAGE, {
-                headers: { Authorization: `Bearer ${token}` }
+            // Generate the timestamp
+            const timestamp = Math.floor(Date.now() / 1000);
+    
+            // Generate the HMAC-SHA256 signature
+            const path = '/packages';
+            const secret = process.env.FIRST_PARTY_SECRET;
+            const firstPartyId = process.env.FIRST_PARTY_ID;
+    
+            const signatureMessage = `${path}${timestamp}${firstPartyId}`;
+            const signature = crypto
+                .createHmac('sha256', secret)
+                .update(signatureMessage)
+                .digest('hex');
+    
+            // Make a request to the API using First Party Authentication
+            const response = await axios.get(`${process.env.MEGA_API_URL_DATA}${path}?per_page=${process.env.MEGA_PER_PAGE}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'First-Party-Id': firstPartyId,
+                    'First-Party-Signature': signature,
+                    'First-Party-Timestamp': timestamp,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
             });
     
             const packages = response.data.data;
             const updateResults = [];
     
-            // Chercher le service "mega"
+            // Fetch the "mega" service
             const megaService = await Service.findOne({ name: { $regex: /^mega$/i } });
             if (!megaService) {
                 return res.status(404).json({ error: 'Service mega not found' });
             }
     
-            // Supprimer les packages avec `package_id: 0` associés au service "mega"
+            // Delete packages with `package_id: 0` associated with the "mega" service
             const deleteResult = await Package.deleteMany({ package_id: 0, serviceId: megaService._id });
-            
+    
             updateResults.push({
                 deletedCount: deleteResult.deletedCount,
                 message: `Packages with package_id: 0 deleted for service mega.`
             });
     
+            // Process each package from the API response
             for (let pkg of packages) {
                 const { id: package_id, name, period, period_type } = pkg;
     
-                // Convertir la durée en jours si `period_type` est 'month' ou 'year'
+                // Convert period to days if `period_type` is 'month' or 'year'
                 let duration = period;
                 if (period_type === 'month') {
-                    duration = period * 30; // Conversion mois en jours
+                    duration = period * 30; // Convert months to days
                 } else if (period_type === 'year') {
-                    duration = period * 365; // Conversion années en jours
+                    duration = period * 365; // Convert years to days
                 }
     
-                // Chercher le package existant par `package_id`
+                // Find existing package by `package_id`
                 let existingPackage = await Package.findOne({ package_id });
     
                 if (existingPackage) {
-                    // Mettre à jour seulement le nom et la durée
+                    // Update name and duration for existing packages
                     existingPackage.name = name;
                     existingPackage.duration = duration;
                     existingPackage.serviceId = megaService._id;
@@ -140,14 +164,14 @@ const MegaController = {
                         name: existingPackage.name
                     });
                 } else {
-                    // Créer un nouveau package si introuvable
+                    // Create new package if not found
                     const newPackage = new Package({
                         package_id,
                         name,
-                        price: 0, // Défaut pour les nouveaux packages
-                        currency: 'USD', // Monnaie par défaut
+                        price: 0, // Default price for new packages
+                        currency: 'USD', // Default currency
                         duration: duration,
-                        etat: 'Not Available', // État par défaut
+                        etat: 'Not Available', // Default status
                         serviceId: megaService._id
                     });
                     await newPackage.save();
@@ -170,7 +194,7 @@ const MegaController = {
                 details: error.message
             });
         }
-    },
+    },    
     Bouquets: async (req, res) => {
         try {
             const token = await MegaController.Authentification();
@@ -191,7 +215,7 @@ const MegaController = {
     
             // Supprimer les bouquets avec `bouquet_id: 0` associés au service "mega"
             const deleteResult = await Channel.updateMany(
-                { packageId: { $in: packages.map(pkg => pkg._id) } }, // Mettre à jour pour les packages spécifiques
+                { packageId: { $in: packages.map(pkg => pkg._id) } },
                 {
                     $pull: {
                         LiveBouquet: { bouquet_id: 0 },
@@ -205,25 +229,44 @@ const MegaController = {
                 message: `Bouquets with bouquet_id: 0 deleted for packages associated with service mega.`
             });
     
-            // Parcourir chaque package du service "mega"
+            // Gérer les bouquets pour chaque package
             for (const pkg of packages) {
                 const packageId = pkg._id;
     
-                // Appeler l'API Mega pour obtenir les bouquets du package
-                const response = await axios.get(`${process.env.MEGA_API_URL_DATA}/packages/${pkg.package_id}/bouquets?per_page=${process.env.MEGA_PER_PAGE}`, {
-                    headers: { Authorization: `Bearer ${token}` }
+                // Générer le timestamp
+                const timestamp = Math.floor(Date.now() / 1000);
+    
+                // Générer la signature HMAC-SHA256
+                const path = `/packages/${pkg.package_id}/bouquets`;
+                const secret = process.env.FIRST_PARTY_SECRET;
+                const firstPartyId = process.env.FIRST_PARTY_ID;
+    
+                const signatureMessage = `${path}${timestamp}${firstPartyId}`;
+                const signature = crypto
+                    .createHmac('sha256', secret)
+                    .update(signatureMessage)
+                    .digest('hex');
+    
+                // Faire une requête à l'API en utilisant First Party Authentication
+                const response = await axios.get(`${process.env.MEGA_API_URL_DATA}${path}?per_page=${process.env.MEGA_PER_PAGE}&filters[is_children]`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'First-Party-Id': firstPartyId,
+                        'First-Party-Signature': signature,
+                        'First-Party-Timestamp': timestamp,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
                 });
     
                 const bouquets = response.data.data;
     
-                // Parcourir chaque bouquet
+                // Parcourir chaque bouquet et mettre à jour les données dans la base de données
                 for (const bouquet of bouquets) {
                     const { id, bouquet_name, type } = bouquet;
     
-                    // Rechercher le bouquet existant dans la collection Channel
                     let channel = await Channel.findOne({ packageId: packageId });
     
-                    // Si le channel n'existe pas, en créer un nouveau
                     if (!channel) {
                         channel = new Channel({
                             packageId: packageId,
@@ -233,7 +276,6 @@ const MegaController = {
                         });
                     }
     
-                    // Mise à jour du bouquet si il existe déjà
                     const result = await Channel.updateOne(
                         {
                             packageId: packageId,
@@ -251,7 +293,6 @@ const MegaController = {
                         { arrayFilters: [{ 'elem.bouquet_id': id }] }
                     );
     
-                    // Si aucun document n'a été mis à jour, créer un nouveau bouquet
                     if (result.matchedCount === 0) {
                         const newBouquet = {
                             bouquet_id: id,
@@ -260,7 +301,6 @@ const MegaController = {
                             active: true
                         };
     
-                        // Ajouter le nouveau bouquet au bon tableau
                         if (type === 'live') {
                             channel.LiveBouquet.push(newBouquet);
                         } else if (type === 'serie') {
@@ -276,14 +316,13 @@ const MegaController = {
     
             return res.status(200).json({
                 message: "Bouquets updated successfully!",
-                results: updateResults
+                results: updateResults,
             });
         } catch (error) {
             console.error("Erreur lors de la mise à jour des bouquets :", error);
             return res.status(500).json({ error: 'Error updating bouquets', details: error.message });
         }
     }
-    
 };
 
 module.exports = MegaController;

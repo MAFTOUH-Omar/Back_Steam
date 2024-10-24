@@ -62,22 +62,30 @@ const Packages = {
             res.status(500).json({ error: i18n.__('package.enablePackage.error') });
         }
     },
-    PackagesByServiceId : async(req, res) => {
+    PackagesByServiceId: async (req, res) => {
         try {
             const { serviceId } = req.params;
-
+            const searchQuery = req.query.search ? req.query.search.trim() : '';
+    
             if (!mongoose.Types.ObjectId.isValid(serviceId)) {
                 return res.status(400).json({ error: i18n.__('package.PackagesByServiceId.invalidSericeId') });
             }
-      
-            const packages = await Package.find({ serviceId }).populate('serviceId' , 'name');
-
+    
+            const query = {
+                serviceId,
+                ...(searchQuery && {
+                    name: { $regex: searchQuery, $options: 'i' }
+                })
+            };
+    
+            const packages = await Package.find(query).populate('serviceId', 'name');
+    
             res.status(200).json({ packages });
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: i18n.__('package.PackagesByServiceId.error') });
         }
-    },
+    },    
     countPackages : async (req, res) => {
         try {
             const packageCount = await Package.countDocuments();
