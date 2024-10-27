@@ -9,6 +9,10 @@ const channelItemSchema = new mongoose.Schema({
         auto: true,
         required: true,
     },
+    bouquet_id: {
+        type: Number,
+        required: true
+    },
     name: {
         type: String,
         required: true,
@@ -73,6 +77,12 @@ const subscriptionSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now,
+    },
+    exp_date: {
+        type: Number,
+    },
+    create_date: {
+        type: Number,
     },
 });
 

@@ -11,7 +11,7 @@ const MegaController = {
         try {
             const data = qs.stringify({
                 grant_type: 'password',
-                client_id: process.env.MEGA_CLIENT_ID,
+                client_id: 1,
                 client_secret: process.env.MEGA_CLIENT_SECRET,
                 username: process.env.MEGA_CLIENT_USERNAME,
                 password: process.env.MEGA_CLIENT_PASSWORD,
@@ -322,7 +322,211 @@ const MegaController = {
             console.error("Erreur lors de la mise à jour des bouquets :", error);
             return res.status(500).json({ error: 'Error updating bouquets', details: error.message });
         }
-    }
+    },
+    M3uCreate: async (
+        username,
+        password,
+        package_id,
+        customer_has_paid = 1,
+        enable_vpn = 0,
+        max_connections = 1,
+        country = 'all',
+        note = 'This subscription created through the store',
+        whatsapp_telegram = '098765432',
+        bouquets = [],
+        user_id = process.env.MEGA_CLIENT_ID
+    ) => {
+        try {
+            const token = await MegaController.Authentification();
+            if (token.error) {
+                return {
+                    error: 'Authentication failed',
+                    details: token.details
+                };
+            }
+    
+            package_id = parseInt(package_id, 10);
+            customer_has_paid = parseInt(customer_has_paid, 10);
+            enable_vpn = parseInt(enable_vpn, 10);
+            max_connections = parseInt(max_connections, 10);
+            user_id = parseInt(user_id, 10);
+    
+            const sanitizedBouquets = Array.isArray(bouquets) 
+                ? bouquets.map(id => parseInt(id, 10)).filter(Number.isInteger) 
+                : [];
+    
+            const data = {
+                username : username,
+                password : password,
+                package_id : package_id,
+                customer_has_paid : customer_has_paid,
+                enable_vpn : enable_vpn,
+                max_connections : max_connections,
+                country : country,
+                note : note,
+                whatsapp_telegram : whatsapp_telegram,
+                bouquets : sanitizedBouquets,
+                user_id : user_id
+            };
+
+            const response = await axios.post(
+                `${process.env.MEGA_API_URL_DATA}/m3us`,
+                data,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                }
+            );
+    
+            return {
+                message: 'M3U subscription created successfully',
+                data: response.data
+            };
+        } catch (error) {
+            return {
+                error: 'Error creating M3U subscription',
+                details: error.response ? error.response.data : error.message
+            };
+        }
+    },
+    MagCreate: async (
+        mac_address,
+        package_id,
+        customer_has_paid = 1,
+        enable_vpn = 0,
+        max_connections = 1,
+        country = 'all',
+        note = 'This subscription created through the store',
+        whatsapp_telegram = '098765432',
+        bouquets = [],
+        user_id = process.env.MEGA_CLIENT_ID
+    ) => {
+        try {
+            const token = await MegaController.Authentification();
+            if (token.error) {
+                return {
+                    error: 'Authentication failed',
+                    details: token.details
+                };
+            }
+    
+            package_id = parseInt(package_id, 10);
+            customer_has_paid = parseInt(customer_has_paid, 10);
+            enable_vpn = parseInt(enable_vpn, 10);
+            max_connections = parseInt(max_connections, 10);
+            user_id = parseInt(user_id, 10);
+    
+            const sanitizedBouquets = Array.isArray(bouquets) 
+                ? bouquets.map(id => parseInt(id, 10)).filter(Number.isInteger) 
+                : [];
+    
+            const data = {
+                mac_address : mac_address,
+                package_id : package_id,
+                customer_has_paid : customer_has_paid,
+                enable_vpn : enable_vpn,
+                max_connections : max_connections,
+                country : country,
+                note : note,
+                whatsapp_telegram : whatsapp_telegram,
+                bouquets : sanitizedBouquets,
+                user_id : user_id
+            };
+
+            const response = await axios.post(
+                `${process.env.MEGA_API_URL_DATA}/mags`,
+                data,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                }
+            );
+    
+            return {
+                message: 'Mag subscription created successfully',
+                data: response.data
+            };
+        } catch (error) {
+            return {
+                error: 'Error creating Mag subscription',
+                details: error.response ? error.response.data : error.message
+            };
+        }
+    },    
+    ActivecodeCreate: async (
+        activecode_device_id = 1,
+        package_id,
+        customer_has_paid = 1,
+        enable_vpn = 0,
+        max_connections = 1,
+        country = 'all',
+        note = 'This subscription created through the store',
+        whatsapp_telegram = '098765432',
+        bouquets = [],
+        user_id = process.env.MEGA_CLIENT_ID
+    ) => {
+        try {
+            const token = await MegaController.Authentification();
+            if (token.error) {
+                return {
+                    error: 'Authentication failed',
+                    details: token.details
+                };
+            }
+    
+            package_id = parseInt(package_id, 10);
+            customer_has_paid = parseInt(customer_has_paid, 10);
+            enable_vpn = parseInt(enable_vpn, 10);
+            max_connections = parseInt(max_connections, 10);
+            user_id = parseInt(user_id, 10);
+            activecode_device_id = parseInt(activecode_device_id, 10);
+    
+            const sanitizedBouquets = Array.isArray(bouquets) 
+                ? bouquets.map(id => parseInt(id, 10)).filter(Number.isInteger) 
+                : [];
+    
+            const data = {
+                activecode_device_id : activecode_device_id,
+                package_id : package_id,
+                customer_has_paid : customer_has_paid,
+                enable_vpn : enable_vpn,
+                max_connections : max_connections,
+                country : country,
+                note : note,
+                whatsapp_telegram : whatsapp_telegram,
+                bouquets : sanitizedBouquets,
+                user_id : user_id
+            };
+
+            const response = await axios.post(
+                `${process.env.MEGA_API_URL_DATA}/activecodes`,
+                data,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                }
+            );
+    
+            return {
+                message: 'Activecode subscription created successfully',
+                data: response.data
+            };
+        } catch (error) {
+            return {
+                error: 'Error creating Activecode subscription',
+                details: error.response ? error.response.data : error.message
+            };
+        }
+    }        
 };
 
 module.exports = MegaController;

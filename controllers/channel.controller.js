@@ -17,7 +17,7 @@ const ChannelController = {
             
             res.json(channels);
         } catch (error) {
-            console.error('Error fetching channels:', error);
+            // console.error('Error fetching channels:', error);
             res.status(500).send('Internal Server Error');
         }
     },
