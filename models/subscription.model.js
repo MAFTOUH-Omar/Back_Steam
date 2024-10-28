@@ -24,6 +24,10 @@ const channelItemSchema = new mongoose.Schema({
 });
 
 const subscriptionSchema = new mongoose.Schema({
+    subscription_id: {
+        type: Number,
+        required: false
+    },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'user',
