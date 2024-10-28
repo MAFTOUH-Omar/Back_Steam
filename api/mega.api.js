@@ -94,21 +94,16 @@ const MegaController = {
                 return res.status(401).json({ error: token.details });
             }
     
-            // Generate the timestamp
             const timestamp = Math.floor(Date.now() / 1000);
-    
-            // Generate the HMAC-SHA256 signature
             const path = '/packages';
             const secret = process.env.FIRST_PARTY_SECRET;
             const firstPartyId = process.env.FIRST_PARTY_ID;
-    
             const signatureMessage = `${path}${timestamp}${firstPartyId}`;
             const signature = crypto
                 .createHmac('sha256', secret)
                 .update(signatureMessage)
                 .digest('hex');
     
-            // Make a request to the API using First Party Authentication
             const response = await axios.get(`${process.env.MEGA_API_URL_DATA}${path}?per_page=${process.env.MEGA_PER_PAGE}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -123,40 +118,42 @@ const MegaController = {
             const packages = response.data.data;
             const updateResults = [];
     
-            // Fetch the "mega" service
             const megaService = await Service.findOne({ name: { $regex: /^mega$/i } });
             if (!megaService) {
                 return res.status(404).json({ error: 'Service mega not found' });
             }
     
-            // Delete packages with `package_id: 0` associated with the "mega" service
-            const deleteResult = await Package.deleteMany({ package_id: 0, serviceId: megaService._id });
+            const existingPackages = await Package.find({ serviceId: megaService._id });
+            const existingPackageIds = existingPackages.map(pkg => pkg.package_id);
+    
+            const apiPackageIds = packages.map(pkg => pkg.id);
+    
+            const packagesToDelete = existingPackages.filter(pkg => !apiPackageIds.includes(pkg.package_id));
+            const deleteResult = await Package.deleteMany({
+                package_id: { $in: packagesToDelete.map(pkg => pkg.package_id) },
+                serviceId: megaService._id
+            });
     
             updateResults.push({
                 deletedCount: deleteResult.deletedCount,
-                message: `Packages with package_id: 0 deleted for service mega.`
+                message: `Ancien(s) package(s) supprimé(s) car non présent(s) dans l'API.`
             });
     
-            // Process each package from the API response
             for (let pkg of packages) {
                 const { id: package_id, name, period, period_type } = pkg;
     
-                // Convert period to days if `period_type` is 'month' or 'year'
                 let duration = period;
                 if (period_type === 'month') {
-                    duration = period * 30; // Convert months to days
+                    duration = period * 30;
                 } else if (period_type === 'year') {
-                    duration = period * 365; // Convert years to days
+                    duration = period * 365;
                 }
     
-                // Find existing package by `package_id`
-                let existingPackage = await Package.findOne({ package_id });
+                let existingPackage = await Package.findOne({ package_id, serviceId: megaService._id });
     
                 if (existingPackage) {
-                    // Update name and duration for existing packages
                     existingPackage.name = name;
                     existingPackage.duration = duration;
-                    existingPackage.serviceId = megaService._id;
                     await existingPackage.save();
                     updateResults.push({
                         package_id: existingPackage.package_id,
@@ -164,14 +161,13 @@ const MegaController = {
                         name: existingPackage.name
                     });
                 } else {
-                    // Create new package if not found
                     const newPackage = new Package({
                         package_id,
                         name,
-                        price: 0, // Default price for new packages
-                        currency: 'USD', // Default currency
-                        duration: duration,
-                        etat: 'Not Available', // Default status
+                        price: 0,
+                        currency: 'USD',
+                        duration,
+                        etat: 'Not Available',
                         serviceId: megaService._id
                     });
                     await newPackage.save();
@@ -184,17 +180,17 @@ const MegaController = {
             }
     
             return res.status(200).json({
-                message: 'Packages processed successfully',
+                message: 'Packages traités avec succès',
                 results: updateResults
             });
     
         } catch (error) {
             return res.status(500).json({
-                error: 'Error updating packages',
+                error: 'Erreur lors de la mise à jour des packages',
                 details: error.message
             });
         }
-    },    
+    },  
     Bouquets: async (req, res) => {
         try {
             const token = await MegaController.Authentification();
@@ -526,7 +522,154 @@ const MegaController = {
                 details: error.response ? error.response.data : error.message
             };
         }
-    }        
+    },
+    M3uExtend: async (
+        subscription_id = 95 ,
+        package_id,
+        max_connections = 1,
+        user_id = process.env.MEGA_CLIENT_ID
+    ) => {
+        try {
+            const token = await MegaController.Authentification();
+            if (token.error) {
+                return {
+                    error: 'Authentication failed',
+                    details: token.details
+                };
+            }
+    
+            package_id = parseInt(package_id, 10);
+            max_connections = parseInt(max_connections, 10);
+            user_id = parseInt(user_id, 10);
+            subscription_id = parseInt(subscription_id, 10);
+    
+            const data = {
+                package_id : package_id,
+                max_connections : max_connections,
+                user_id : user_id
+            };
+
+            const response = await axios.post(
+                `${process.env.MEGA_API_URL_DATA}/m3us/${subscription_id}/extend`,
+                data,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                }
+            );
+    
+            return {
+                message: 'M3U subscription extended successfully',
+                data: response.data
+            };
+        } catch (error) {
+            return {
+                error: 'Error extend M3U subscription',
+                details: error.response ? error.response.data : error.message
+            };
+        }
+    },
+    MagExtend: async (
+        subscription_id = 10 ,
+        package_id,
+        max_connections = 1,
+        user_id = process.env.MEGA_CLIENT_ID
+    ) => {
+        try {
+            const token = await MegaController.Authentification();
+            if (token.error) {
+                return {
+                    error: 'Authentication failed',
+                    details: token.details
+                };
+            }
+    
+            package_id = parseInt(package_id, 10);
+            max_connections = parseInt(max_connections, 10);
+            user_id = parseInt(user_id, 10);
+            subscription_id = parseInt(subscription_id, 10);
+    
+            const data = {
+                package_id : package_id,
+                max_connections : max_connections,
+                user_id : user_id
+            };
+
+            const response = await axios.post(
+                `${process.env.MEGA_API_URL_DATA}/mags/${subscription_id}/extend`,
+                data,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                }
+            );
+    
+            return {
+                message: 'Mag subscription extended successfully',
+                data: response.data
+            };
+        } catch (error) {
+            return {
+                error: 'Error extend Mag subscription',
+                details: error.response ? error.response.data : error.message
+            };
+        }
+    },
+    ActivecodeExtend: async (
+        subscription_id = 10 ,
+        package_id,
+        max_connections = 1,
+        user_id = process.env.MEGA_CLIENT_ID
+    ) => {
+        try {
+            const token = await MegaController.Authentification();
+            if (token.error) {
+                return {
+                    error: 'Authentication failed',
+                    details: token.details
+                };
+            }
+    
+            package_id = parseInt(package_id, 10);
+            max_connections = parseInt(max_connections, 10);
+            user_id = parseInt(user_id, 10);
+            subscription_id = parseInt(subscription_id, 10);
+    
+            const data = {
+                package_id : package_id,
+                max_connections : max_connections,
+                user_id : user_id
+            };
+
+            const response = await axios.post(
+                `${process.env.MEGA_API_URL_DATA}/activecodes/${subscription_id}/extend`,
+                data,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                }
+            );
+    
+            return {
+                message: 'Activecode subscription extended successfully',
+                data: response.data
+            };
+        } catch (error) {
+            return {
+                error: 'Error extend Activecode subscription',
+                details: error.response ? error.response.data : error.message
+            };
+        }
+    },
 };
 
 module.exports = MegaController;

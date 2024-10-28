@@ -5,6 +5,7 @@ const auth = require('../middlewares/auth.middlewares');
 const admin = require('../middlewares/admin.middlewares');
 
 router.post('/create-subscription' , SubscriptionController.createSubscription)
+router.put('/extend-subscription' , SubscriptionController.extendSubscription)
 router.get('/count-subscription' , admin , SubscriptionController.countSubscriptions);
 router.get('/getAllSubscriptionsWithUserAndPackage' , admin , SubscriptionController.getAllSubscriptionsWithUserAndPackage);
 router.get('/subscription-user' , SubscriptionController.getAllSubscriptionsByUserId);

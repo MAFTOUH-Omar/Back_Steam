@@ -3,7 +3,6 @@ const Subscription = require('../models/subscription.model');
 const Package = require('../models/packages.model');
 const i18n = require('../config/i18n'); 
 const { Paypal , Stripe } = require('./payement.controller')
-const MegaController = require('../api/mega.api');
 
 const SubscriptionController = {            
     createSubscription: async (req, res) => {
@@ -79,7 +78,7 @@ const SubscriptionController = {
             let paymentResult;
             let approvalUrl;
             if (paymentMethod === 'paypal') {
-                paymentResult = await Paypal.paySubscription(req, res, newSubscription._id);
+                paymentResult = await Paypal.paySubscription(req,res,newSubscription._id,false);
             } else if (paymentMethod === 'stripe') {
                 paymentResult = await Stripe.paySubscription(req, newSubscription._id);
             }
@@ -88,91 +87,6 @@ const SubscriptionController = {
                 newSubscription.exp_date = currentUnixTime + package.duration * 86400;
                 await newSubscription.save();
                 approvalUrl = paymentResult.link;
-    
-                if (deviceType === 'm3u') {
-                    const allBouquets = [
-                        ...(Array.isArray(liveBouquet) ? liveBouquet.map(item => parseInt(item.bouquet_id, 10)) : []),
-                        ...(Array.isArray(seriesBouquet) ? seriesBouquet.map(item => parseInt(item.bouquet_id, 10)) : []),
-                        ...(Array.isArray(vodBouquet) ? vodBouquet.map(item => parseInt(item.bouquet_id, 10)) : [])
-                    ].filter(Number.isInteger);
-
-                    const m3uCreateResult = await MegaController.M3uCreate(
-                        m3uDetails.userName,
-                        m3uDetails.password,
-                        parseInt(package.package_id, 10),            // package Id
-                        1 ,                    // customer_has_paid
-                        0 ,                    // enable_vpn
-                        1 ,                    // max_connections
-                        'all',                               // country
-                        'This subscription created through the store', // description
-                        '098765432',                         // whatsapp_telegram
-                        allBouquets,                         // bouquets
-                        parseInt(process.env.MEGA_CLIENT_ID, 10)  // user_id
-                    );
-    
-                    if (m3uCreateResult.error) {
-                        return res.status(500).json({ 
-                            error: 'Erreur lors de la création de l\'abonnement M3U', 
-                            details: m3uCreateResult.details ,
-                        });
-                    }
-                }
-
-                if (deviceType === 'mac') {
-                    const allBouquets = [
-                        ...(Array.isArray(liveBouquet) ? liveBouquet.map(item => parseInt(item.bouquet_id, 10)) : []),
-                        ...(Array.isArray(seriesBouquet) ? seriesBouquet.map(item => parseInt(item.bouquet_id, 10)) : []),
-                        ...(Array.isArray(vodBouquet) ? vodBouquet.map(item => parseInt(item.bouquet_id, 10)) : [])
-                    ].filter(Number.isInteger);
-
-                    const magCreateResult = await MegaController.MagCreate(
-                        macDetails.macAddress,
-                        parseInt(package.package_id, 10),            // package Id
-                        1 ,                    // customer_has_paid
-                        0 ,                    // enable_vpn
-                        1 ,                    // max_connections
-                        'all',                               // country
-                        'This subscription created through the store', // description
-                        '098765432',                         // whatsapp_telegram
-                        allBouquets,                         // bouquets
-                        parseInt(process.env.MEGA_CLIENT_ID, 10)  // user_id
-                    );
-    
-                    if (magCreateResult.error) {
-                        return res.status(500).json({ 
-                            error: 'Erreur lors de la création de l\'abonnement Mag', 
-                            details: magCreateResult.details ,
-                        });
-                    }
-                }
-
-                if (deviceType === 'activeCode') {
-                    const allBouquets = [
-                        ...(Array.isArray(liveBouquet) ? liveBouquet.map(item => parseInt(item.bouquet_id, 10)) : []),
-                        ...(Array.isArray(seriesBouquet) ? seriesBouquet.map(item => parseInt(item.bouquet_id, 10)) : []),
-                        ...(Array.isArray(vodBouquet) ? vodBouquet.map(item => parseInt(item.bouquet_id, 10)) : [])
-                    ].filter(Number.isInteger);
-
-                    const activecodeCreateResult = await MegaController.ActivecodeCreate(
-                        parseInt(1 , 10),       // activecode_device_id
-                        parseInt(package.package_id, 10),            // package Id
-                        1 ,                    // customer_has_paid
-                        0 ,                    // enable_vpn
-                        1 ,                    // max_connections
-                        'all',                               // country
-                        'This subscription created through the store', // description
-                        '098765432',                         // whatsapp_telegram
-                        allBouquets,                         // bouquets
-                        parseInt(process.env.MEGA_CLIENT_ID, 10)  // user_id
-                    );
-    
-                    if (activecodeCreateResult.error) {
-                        return res.status(500).json({ 
-                            error: 'Erreur lors de la création de l\'abonnement Activecode', 
-                            details: activecodeCreateResult.details ,
-                        });
-                    }
-                }
     
                 res.status(201).json({ 
                     message: 'Abonnement créé avec succès.', 
@@ -428,7 +342,65 @@ const SubscriptionController = {
             console.error(error);
             res.status(500).json({ error: 'Erreur lors de l\'exécution' });
         }
-    },        
+    },
+    extendSubscription: async (req, res) => {
+        try {
+            const { subscriptionId, newPackageId , paymentMethod} = req.body;
+    
+            if (!mongoose.Types.ObjectId.isValid(subscriptionId) || !mongoose.Types.ObjectId.isValid(newPackageId)) {
+                return res.status(400).json({ error: "Les identifiants de l'abonnement ou du package ne sont pas valides." });
+            }
+    
+            const subscription = await Subscription.findById(subscriptionId);
+            if (!subscription) {
+                return res.status(404).json({ error: 'Abonnement non trouvé.' });
+            }
+    
+            const newPackage = await Package.findById(newPackageId);
+            if (!newPackage) {
+                return res.status(404).json({ error: 'Nouveau package non trouvé.' });
+            }
+    
+            const currentUnixTime = Math.floor(Date.now() / 1000);
+    
+            subscription.packageId = newPackageId;
+    
+            if (subscription.exp_date < currentUnixTime) {
+                subscription.exp_date = currentUnixTime + newPackage.duration * 86400;
+            } else {
+                subscription.exp_date += newPackage.duration * 86400;
+            }
+    
+    
+            let paymentResult;
+            let approvalUrl;
+            if (paymentMethod === 'paypal') {
+                paymentResult = await Paypal.paySubscription(req, res, subscriptionId , true);
+            } else if (paymentMethod === 'stripe') {
+                paymentResult = await Stripe.paySubscription(req, subscriptionId);
+            }
+    
+            if (paymentResult && paymentResult.success) {
+                approvalUrl = paymentResult.link;
+                subscription.paymentMethod = paymentMethod;
+                await subscription.save();
+                return res.status(200).json({ 
+                    message: 'Abonnement prolongé avec succès.', 
+                    subscription, 
+                    link: approvalUrl 
+                });
+            } else if (paymentResult && !paymentResult.success) {
+                return res.status(500).json({ 
+                    error: 'Erreur lors du paiement de l\'extension de l\'abonnement.', 
+                    message: paymentResult.message 
+                });
+            }
+    
+        } catch (error) {
+            console.error('Erreur lors de l\'extension de l\'abonnement:', error);
+            res.status(500).json({ error: 'Une erreur est survenue lors de l\'extension de l\'abonnement.' });
+        }
+    }
 };
 
 module.exports = SubscriptionController;

@@ -1,6 +1,7 @@
 const Subscription = require('../models/subscription.model');
 const paypal = require('paypal-rest-sdk');
 require('dotenv').config();
+const MegaController = require('../api/mega.api');
 
 // Paypal Config
 paypal.configure({
@@ -17,7 +18,7 @@ const binance = require('node-binance-api')().options({
 });
 
 const Paypal = {
-    paySubscription: async function(req, res, subscriptionId) {
+    paySubscription: async function(req, res, subscriptionId, extend) {
         try {
             const subscription = await Subscription.findById(subscriptionId).populate('packageId');
             if (!subscription) {
@@ -31,7 +32,7 @@ const Paypal = {
                     "payment_method": "paypal"
                 },
                 "redirect_urls": {
-                    "return_url": process.env.PAYPAL_RETURN_URL + '?subscriptionId=' + subscriptionId ,
+                    "return_url": process.env.PAYPAL_RETURN_URL + '?subscriptionId=' + subscriptionId + '&extend=' + extend ,
                     "cancel_url": process.env.PAYPAL_CANCEL_URL + '?subscriptionId=' + subscriptionId
                 },
                 "transactions": [{
@@ -81,37 +82,135 @@ const Paypal = {
             console.error('Erreur lors de la tentative de paiement PayPal:', err);
             return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la tentative de paiement PayPal.' });
         }
-    },
+    },   
     success: async function(req, res) {
         try {
-            // Récupérer subscriptionId à partir de la requête
-            const subscriptionId = req.query.subscriptionId;
+            const { subscriptionId , extend , payerId , paymentId } = req.query;
+            console.log("extend value : ",extend)
 
-            // Vérifier si subscriptionId est présent
             if (!subscriptionId) {
                 return res.status(400).json({ success: false, message: 'Identifiant d\'abonnement manquant dans la requête.' });
             }
 
-            // Récupérer l'abonnement
             const subscription = await Subscription.findById(subscriptionId).populate('packageId');
             if (!subscription) {
                 return res.status(404).json({ success: false, message: 'Abonnement non trouvé.' });
             }
 
-            // Récupérer les informations de paiement depuis la requête
-            const payerId = req.query.PayerID;
-            const paymentId = req.query.paymentId;
+            // const payerId = req.query.PayerID;
+            // const paymentId = req.query.paymentId;
 
-            // Mettre à jour les informations de paiement dans le modèle de souscription
             subscription.paymentMethod = 'paypal';
             subscription.paymentStatus = 'success';
             subscription.paymentId = paymentId;
             subscription.paymentDate = new Date();
             subscription.activationStatus = true;
 
-            // Enregistrer les modifications dans la base de données
+            const allBouquets = [
+                ...subscription.liveBouquet.map(item => parseInt(item.bouquet_id, 10)),
+                ...subscription.seriesBouquet.map(item => parseInt(item.bouquet_id, 10)),
+                ...subscription.vodBouquet.map(item => parseInt(item.bouquet_id, 10))
+            ].filter(Number.isInteger);
+
+            const deviceType = subscription.deviceType;
+            const packageId = parseInt(subscription.packageId.package_id, 10);
+            const megaClientId = parseInt(process.env.MEGA_CLIENT_ID, 10);
+            const isExtend = extend === 'true';
+
+            // const createSubscription = async () => {
+            //     switch (deviceType) {
+            //         case 'm3u':
+            //             return extend
+            //                 ? MegaController.M3uExtend(95, packageId, 1, megaClientId)
+            //                 : MegaController.M3uCreate(subscription.deviceDetails.m3u.userName, subscription.deviceDetails.m3u.password, packageId, 1, 0, 1, 'all', 'This subscription created through the store', '098765432', allBouquets, megaClientId);
+            //         case 'mac':
+            //             return extend
+            //                 ? MegaController.MagExtend(10, packageId, 1, megaClientId)
+            //                 : MegaController.MagCreate(subscription.deviceDetails.mac.macAddress, packageId, 1, 0, 1, 'all', 'This subscription created through the store', '098765432', allBouquets, megaClientId);
+            //         case 'activeCode':
+            //             return extend
+            //                 ? MegaController.ActivecodeExtend(95, packageId, 1, megaClientId)
+            //                 : MegaController.ActivecodeCreate(1, packageId, 1, 0, 1, 'all', 'This subscription created through the store', '098765432', allBouquets, megaClientId);
+            //         default:
+            //             throw new Error('Type de dispositif non supporté.');
+            //     }
+            // };
+
+            const createSubscription = async () => {
+                console.log("Device Type:", deviceType);
+                console.log("Extend Value:", isExtend);
+            
+                switch (deviceType) {
+                    case 'm3u':
+                        if (isExtend) {
+                            console.log("Calling M3uExtend...");
+                            return MegaController.M3uExtend(96, packageId, 1, megaClientId);
+                        } else {
+                            console.log("Calling M3uCreate...");
+                            return MegaController.M3uCreate(
+                                subscription.deviceDetails.m3u.userName,
+                                subscription.deviceDetails.m3u.password,
+                                packageId,
+                                1,
+                                0,
+                                1,
+                                'all',
+                                'This subscription created through the store',
+                                '098765432',
+                                allBouquets,
+                                megaClientId
+                            );
+                        }
+                    case 'mac':
+                        if (isExtend) {
+                            console.log("Calling MagExtend...");
+                            return MegaController.MagExtend(11, packageId, 1, megaClientId);
+                        } else {
+                            console.log("Calling MagCreate...");
+                            return MegaController.MagCreate(
+                                subscription.deviceDetails.mac.macAddress,
+                                packageId,
+                                1,
+                                0,
+                                1,
+                                'all',
+                                'This subscription created through the store',
+                                '098765432',
+                                allBouquets,
+                                megaClientId
+                            );
+                        }
+                    case 'activeCode':
+                        if (isExtend) {
+                            console.log("Calling ActivecodeExtend...");
+                            return MegaController.ActivecodeExtend(7, packageId, 1, megaClientId);
+                        } else {
+                            console.log("Calling ActivecodeCreate...");
+                            return MegaController.ActivecodeCreate(
+                                1,
+                                packageId,
+                                1,
+                                0,
+                                1,
+                                'all',
+                                'This subscription created through the store',
+                                '098765432',
+                                allBouquets,
+                                megaClientId
+                            );
+                        }
+                    default:
+                        throw new Error('Type de dispositif non supporté.');
+                }
+            };
+            
+            const result = await createSubscription();
+            if (result.error) {
+                return res.status(500).json({ error: 'Erreur lors de la création de l\'abonnement', details: result.details });
+            }
+
             await subscription.save();
-            res.redirect(process.env.PAYPAL_REDIRECT + subscriptionId + '?pay=true');
+            res.redirect(extend ? process.env.UNPAID_PAYPAL_REDIRECT : `${process.env.PAYPAL_REDIRECT}${subscriptionId}?pay=true`);
         } catch (err) {
             console.error('Erreur lors de la récupération de l\'abonnement:', err);
             return res.status(500).json({ success: false, message: 'Une erreur est survenue lors de la récupération de l\'abonnement.' });
@@ -226,6 +325,78 @@ const UnpaidPaypal = {
             subscription.paymentDate = new Date();
             subscription.activationStatus = true;
 
+            const liveBouquet = subscription.liveBouquet || [];
+            const seriesBouquet = subscription.seriesBouquet || [];
+            const vodBouquet = subscription.vodBouquet || [];
+            const allBouquets = [
+                ...liveBouquet.map(item => parseInt(item.bouquet_id, 10)),
+                ...seriesBouquet.map(item => parseInt(item.bouquet_id, 10)),
+                ...vodBouquet.map(item => parseInt(item.bouquet_id, 10))
+            ].filter(Number.isInteger);
+    
+            const deviceType = subscription.deviceType;
+            const packageId = parseInt(subscription.packageId.package_id, 10);
+            
+            if (deviceType === 'm3u') {
+                const m3uCreateResult = await MegaController.M3uCreate(
+                    subscription.deviceDetails.m3u.userName,
+                    subscription.deviceDetails.m3u.password,
+                    packageId,
+                    1,
+                    0,
+                    1,
+                    'all',
+                    'This subscription created through the store',
+                    '098765432',
+                    allBouquets,
+                    parseInt(process.env.MEGA_CLIENT_ID, 10)
+                );
+                if (m3uCreateResult.error) {
+                    return res.status(500).json({
+                        error: 'Erreur lors de la création de l\'abonnement M3U',
+                        details: m3uCreateResult.details,
+                    });
+                }
+            } else if (deviceType === 'mac') {
+                const magCreateResult = await MegaController.MagCreate(
+                    subscription.deviceDetails.mac.macAddress,
+                    packageId,
+                    1,
+                    0,
+                    1,
+                    'all',
+                    'This subscription created through the store',
+                    '098765432',
+                    allBouquets,
+                    parseInt(process.env.MEGA_CLIENT_ID, 10)
+                );
+                if (magCreateResult.error) {
+                    return res.status(500).json({
+                        error: 'Erreur lors de la création de l\'abonnement Mag',
+                        details: magCreateResult.details,
+                    });
+                }
+            } else if (deviceType === 'activeCode') {
+                const activecodeCreateResult = await MegaController.ActivecodeCreate(
+                    1,
+                    packageId,
+                    1,
+                    0,
+                    1,
+                    'all',
+                    'This subscription created through the store',
+                    '098765432',
+                    allBouquets,
+                    parseInt(process.env.MEGA_CLIENT_ID, 10)
+                );
+                if (activecodeCreateResult.error) {
+                    return res.status(500).json({
+                        error: 'Erreur lors de la création de l\'abonnement Activecode',
+                        details: activecodeCreateResult.details,
+                    });
+                }
+            }
+
             await subscription.save();
             res.redirect(process.env.UNPAID_PAYPAL_REDIRECT);
         } catch (err) {
@@ -308,6 +479,78 @@ const Stripe = {
             subscription.paymentStatus = 'success';
             subscription.paymentDate = new Date();
             subscription.activationStatus = true;
+
+            const liveBouquet = subscription.liveBouquet || [];
+            const seriesBouquet = subscription.seriesBouquet || [];
+            const vodBouquet = subscription.vodBouquet || [];
+            const allBouquets = [
+                ...liveBouquet.map(item => parseInt(item.bouquet_id, 10)),
+                ...seriesBouquet.map(item => parseInt(item.bouquet_id, 10)),
+                ...vodBouquet.map(item => parseInt(item.bouquet_id, 10))
+            ].filter(Number.isInteger);
+    
+            const deviceType = subscription.deviceType;
+            const packageId = parseInt(subscription.packageId.package_id, 10);
+            
+            if (deviceType === 'm3u') {
+                const m3uCreateResult = await MegaController.M3uCreate(
+                    subscription.deviceDetails.m3u.userName,
+                    subscription.deviceDetails.m3u.password,
+                    packageId,
+                    1,
+                    0,
+                    1,
+                    'all',
+                    'This subscription created through the store',
+                    '098765432',
+                    allBouquets,
+                    parseInt(process.env.MEGA_CLIENT_ID, 10)
+                );
+                if (m3uCreateResult.error) {
+                    return res.status(500).json({
+                        error: 'Erreur lors de la création de l\'abonnement M3U',
+                        details: m3uCreateResult.details,
+                    });
+                }
+            } else if (deviceType === 'mac') {
+                const magCreateResult = await MegaController.MagCreate(
+                    subscription.deviceDetails.mac.macAddress,
+                    packageId,
+                    1,
+                    0,
+                    1,
+                    'all',
+                    'This subscription created through the store',
+                    '098765432',
+                    allBouquets,
+                    parseInt(process.env.MEGA_CLIENT_ID, 10)
+                );
+                if (magCreateResult.error) {
+                    return res.status(500).json({
+                        error: 'Erreur lors de la création de l\'abonnement Mag',
+                        details: magCreateResult.details,
+                    });
+                }
+            } else if (deviceType === 'activeCode') {
+                const activecodeCreateResult = await MegaController.ActivecodeCreate(
+                    1,
+                    packageId,
+                    1,
+                    0,
+                    1,
+                    'all',
+                    'This subscription created through the store',
+                    '098765432',
+                    allBouquets,
+                    parseInt(process.env.MEGA_CLIENT_ID, 10)
+                );
+                if (activecodeCreateResult.error) {
+                    return res.status(500).json({
+                        error: 'Erreur lors de la création de l\'abonnement Activecode',
+                        details: activecodeCreateResult.details,
+                    });
+                }
+            }
     
             await subscription.save();
     
@@ -389,6 +632,78 @@ const UnpaidStripe = {
             subscription.paymentStatus = 'success';
             subscription.paymentDate = new Date();
             subscription.activationStatus = true;
+
+            const liveBouquet = subscription.liveBouquet || [];
+            const seriesBouquet = subscription.seriesBouquet || [];
+            const vodBouquet = subscription.vodBouquet || [];
+            const allBouquets = [
+                ...liveBouquet.map(item => parseInt(item.bouquet_id, 10)),
+                ...seriesBouquet.map(item => parseInt(item.bouquet_id, 10)),
+                ...vodBouquet.map(item => parseInt(item.bouquet_id, 10))
+            ].filter(Number.isInteger);
+    
+            const deviceType = subscription.deviceType;
+            const packageId = parseInt(subscription.packageId.package_id, 10);
+            
+            if (deviceType === 'm3u') {
+                const m3uCreateResult = await MegaController.M3uCreate(
+                    subscription.deviceDetails.m3u.userName,
+                    subscription.deviceDetails.m3u.password,
+                    packageId,
+                    1,
+                    0,
+                    1,
+                    'all',
+                    'This subscription created through the store',
+                    '098765432',
+                    allBouquets,
+                    parseInt(process.env.MEGA_CLIENT_ID, 10)
+                );
+                if (m3uCreateResult.error) {
+                    return res.status(500).json({
+                        error: 'Erreur lors de la création de l\'abonnement M3U',
+                        details: m3uCreateResult.details,
+                    });
+                }
+            } else if (deviceType === 'mac') {
+                const magCreateResult = await MegaController.MagCreate(
+                    subscription.deviceDetails.mac.macAddress,
+                    packageId,
+                    1,
+                    0,
+                    1,
+                    'all',
+                    'This subscription created through the store',
+                    '098765432',
+                    allBouquets,
+                    parseInt(process.env.MEGA_CLIENT_ID, 10)
+                );
+                if (magCreateResult.error) {
+                    return res.status(500).json({
+                        error: 'Erreur lors de la création de l\'abonnement Mag',
+                        details: magCreateResult.details,
+                    });
+                }
+            } else if (deviceType === 'activeCode') {
+                const activecodeCreateResult = await MegaController.ActivecodeCreate(
+                    1,
+                    packageId,
+                    1,
+                    0,
+                    1,
+                    'all',
+                    'This subscription created through the store',
+                    '098765432',
+                    allBouquets,
+                    parseInt(process.env.MEGA_CLIENT_ID, 10)
+                );
+                if (activecodeCreateResult.error) {
+                    return res.status(500).json({
+                        error: 'Erreur lors de la création de l\'abonnement Activecode',
+                        details: activecodeCreateResult.details,
+                    });
+                }
+            }
     
             await subscription.save();
     
