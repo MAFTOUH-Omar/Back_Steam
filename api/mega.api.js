@@ -670,6 +670,144 @@ const MegaController = {
             };
         }
     },
+    M3uUpdate: async (
+        subscription_id,
+        username,
+        password,
+        bouquets = []
+    ) => {
+        try {
+            const token = await MegaController.Authentification();
+            if (token.error) {
+                return {
+                    error: 'Authentication failed',
+                    details: token.details
+                };
+            }
+    
+            subscription_id = parseInt(subscription_id, 10);
+            const sanitizedBouquets = Array.isArray(bouquets) 
+                ? bouquets.map(id => parseInt(id, 10)).filter(Number.isInteger) 
+                : [];
+    
+            const data = {};
+            if (username) data.username = username;
+            if (password) data.password = password;
+            if (sanitizedBouquets.length > 0) data.bouquets = sanitizedBouquets;
+    
+            const response = await axios.put(
+                `${process.env.MEGA_API_URL_DATA}/m3us/${subscription_id}`,
+                data,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                }
+            );
+    
+            return {
+                message: 'M3u subscription updated successfully',
+                data: response.data
+            };
+        } catch (error) {
+            return {
+                error: 'Error updating M3u subscription',
+                details: error.response ? error.response.data : error.message
+            };
+        }
+    }, 
+    MagUpdate: async (
+        subscription_id,
+        mac_address,
+        bouquets = []
+    ) => {
+        try {
+            const token = await MegaController.Authentification();
+            if (token.error) {
+                return {
+                    error: 'Authentication failed',
+                    details: token.details
+                };
+            }
+    
+            subscription_id = parseInt(subscription_id, 10);
+            const sanitizedBouquets = Array.isArray(bouquets) 
+                ? bouquets.map(id => parseInt(id, 10)).filter(Number.isInteger) 
+                : [];
+    
+            const data = {};
+            if (mac_address) data.mac_address = mac_address;
+            if (sanitizedBouquets.length > 0) data.bouquets = sanitizedBouquets;
+    
+            const response = await axios.put(
+                `${process.env.MEGA_API_URL_DATA}/mags/${subscription_id}`,
+                data,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                }
+            );
+    
+            return {
+                message: 'Mag subscription updated successfully',
+                data: response.data
+            };
+        } catch (error) {
+            return {
+                error: 'Error updating Mag subscription',
+                details: error.response ? error.response.data : error.message
+            };
+        }
+    },
+    ActivecodeUpdate: async (
+        subscription_id,
+        bouquets = []
+    ) => {
+        try {
+            const token = await MegaController.Authentification();
+            if (token.error) {
+                return {
+                    error: 'Authentication failed',
+                    details: token.details
+                };
+            }
+    
+            subscription_id = parseInt(subscription_id, 10);
+            const sanitizedBouquets = Array.isArray(bouquets) 
+                ? bouquets.map(id => parseInt(id, 10)).filter(Number.isInteger) 
+                : [];
+    
+            const data = {};
+            if (sanitizedBouquets.length > 0) data.bouquets = sanitizedBouquets;
+    
+            const response = await axios.put(
+                `${process.env.MEGA_API_URL_DATA}/activecodes/${subscription_id}`,
+                data,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                }
+            );
+    
+            return {
+                message: 'Activecode subscription updated successfully',
+                data: response.data
+            };
+        } catch (error) {
+            return {
+                error: 'Error updating Activecode subscription',
+                details: error.response ? error.response.data : error.message
+            };
+        }
+    },  
 };
 
 module.exports = MegaController;

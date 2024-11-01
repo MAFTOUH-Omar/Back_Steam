@@ -3,6 +3,7 @@ const Subscription = require('../models/subscription.model');
 const Package = require('../models/packages.model');
 const i18n = require('../config/i18n'); 
 const { Paypal , Stripe } = require('./payement.controller')
+const MegaController = require('../api/mega.api');
 
 const SubscriptionController = {            
     createSubscription: async (req, res) => {
@@ -188,6 +189,7 @@ const SubscriptionController = {
     updateSubscription: async (req, res) => {
         try {
             const { userId, packageId, subscriptionId, deviceDetails, liveBouquet, seriesBouquet, vodBouquet } = req.body;
+    
             if (
                 !mongoose.Types.ObjectId.isValid(userId) ||
                 !mongoose.Types.ObjectId.isValid(packageId) ||
@@ -195,10 +197,12 @@ const SubscriptionController = {
             ) {
                 return res.status(400).json({ error: i18n.__('subscription.updateSubscription.invalidUserPackageSubscriptionId')});
             }
+    
             const subscription = await Subscription.findOne({ _id: subscriptionId, user: userId, packageId });
-            if (!subscription) {updateSubscription
+            if (!subscription) {
                 return res.status(404).json({ error: i18n.__('subscription.updateSubscription.notFound') });
             }
+    
             if (deviceDetails) {
                 if (deviceDetails.activeCode) {
                     if (
@@ -218,7 +222,7 @@ const SubscriptionController = {
                     ) {
                         return res.status(400).json({ error: i18n.__('subscription.updateSubscription.invalidM3uFormat') });
                     }
-                    }
+                }
                 if (
                     deviceDetails.mac &&
                     deviceDetails.mac.macAddress &&
@@ -228,18 +232,37 @@ const SubscriptionController = {
                 }
                 subscription.deviceDetails = deviceDetails;
             }
-            if (liveBouquet) {
-                subscription.liveBouquet = liveBouquet;
-                }
-            if (seriesBouquet) {
-                subscription.seriesBouquet = seriesBouquet;
-            }
-            if (vodBouquet) {
-                subscription.vodBouquet = vodBouquet;
-            }
+    
+            if (liveBouquet) subscription.liveBouquet = liveBouquet;
+            if (seriesBouquet) subscription.seriesBouquet = seriesBouquet;
+            if (vodBouquet) subscription.vodBouquet = vodBouquet;
+    
             if (!deviceDetails && !liveBouquet && !seriesBouquet && !vodBouquet) {
                 return res.status(200).json({ message: i18n.__('subscription.updateSubscription.noModification'), subscription });
             }
+    
+            const allBouquets = [
+                ...liveBouquet.filter(item => item.selected).map(item => parseInt(item.bouquet_id, 10)),
+                ...seriesBouquet.filter(item => item.selected).map(item => parseInt(item.bouquet_id, 10)),
+                ...vodBouquet.filter(item => item.selected).map(item => parseInt(item.bouquet_id, 10))
+            ].filter(Number.isInteger);            
+    
+            const m3uData = {};
+            if (deviceDetails?.m3u?.userName) m3uData.username = deviceDetails.m3u.userName;
+            if (deviceDetails?.m3u?.password) m3uData.password = deviceDetails.m3u.password;
+            if (allBouquets.length) m3uData.bouquets = allBouquets;
+    
+            const macData = {};
+            if (deviceDetails?.mac?.macAddress) macData.mac_address = deviceDetails.mac.macAddress;
+            if (allBouquets.length) macData.bouquets = allBouquets;
+    
+            const activeCodeData = {};
+            if (allBouquets.length) activeCodeData.bouquets = allBouquets;
+    
+            if (subscription.deviceType === 'm3u') await MegaController.M3uUpdate(subscription.subscription_id, m3uData.username, m3uData.password, m3uData.bouquets);
+            if (subscription.deviceType === 'mac') await MegaController.MagUpdate(subscription.subscription_id, macData.mac_address, macData.bouquets);
+            if (subscription.deviceType === 'activeCode') await MegaController.ActivecodeUpdate(subscription.subscription_id, activeCodeData.bouquets);
+    
             await subscription.save();
             res.status(200).json({ message: i18n.__('subscription.updateSubscription.success'), subscription });
         } catch (error) {
@@ -247,6 +270,7 @@ const SubscriptionController = {
             res.status(500).json({ error: i18n.__('subscription.updateSubscription.error') });
         }
     },
+    
     getAllSubscriptionsWithUserAndPackage: async (req, res) => {
         try {
             const page = parseInt(req.query.page) || 1;
