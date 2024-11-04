@@ -4,11 +4,16 @@ const i18n = require('../config/i18n');
 
 const auth = async (req, res, next) => {
   try {
-    const token = req.headers.authorization.split(" ")[1];
+    const authHeader = req.headers.authorization;
     const secretKey = req.headers.secret_key;
 
-    if (!token || !secretKey) {
+    if (!authHeader || !secretKey) {
       return res.status(401).json({ message: i18n.__('authMiddleware.requiredTokenSecretKey') });
+    }
+
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ message: i18n.__('authMiddleware.missingToken') });
     }
 
     if (secretKey !== process.env.KEY) {
@@ -25,6 +30,7 @@ const auth = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
+    console.error("Authentication Error:", error);
     res.status(401).json({ message: i18n.__('authMiddleware.error') });
   }
 };

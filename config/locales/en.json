@@ -140,7 +140,8 @@
 		"requiredTokenSecretKey": "Authentication failed: No token or secret key provided.",
 		"invalidSecretKey": "Authentication failed: Invalid secret key.",
 		"notFoundUser": "Authentication failed: User not found.",
-		"error": "Authentication failed: Invalid token."
+		"error": "Authentication failed: Invalid token.",
+		"missingToken": "Authentication failed: missing token."
 	},
 	"adminMiddleware": {
 		"error": "Unauthorized. Please authenticate as administrator."
